@@ -1,5 +1,5 @@
 import os
-from aws_cdk import App 
+from aws_cdk import App
 
 from data_lake_stack.buckets import S3BucketStack
 from github_oidc_stack.oidc import GitHubOIDCStack
