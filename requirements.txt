@@ -1,0 +1,7 @@
+aws-cdk-lib==2.203.1
+constructs==10.4.2
+awscli==1.41.2
+boto3==1.39.2
+requests==2.32.4
+pandas==2.3.0
+pyarrow==20.0.0
