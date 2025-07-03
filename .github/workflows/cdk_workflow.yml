@@ -24,21 +24,21 @@ jobs:
           if [[ "${GITHUB_REF##*/}" == "main" ]]; then
             echo "ENV=PROD" >> $GITHUB_ENV
             echo "REPO_NAME=${{ github.repository }}" >> $GITHUB_ENV
-            echo "ROLE_ARN=arn:aws:iam::${{ secrets.PROD_ACCOUNT_ID }}:role/github-actions-deploy-role" >> $GITHUB_ENV
+            echo "ROLE_ARN=arn:aws:iam::${{ secrets.PROD_ACCOUNT_ID }}:role/CDKAutoRole" >> $GITHUB_ENV
             echo "STAGE_BUCKET=stage-datalake-us-east-1-${{ secrets.PROD_ACCOUNT_ID }}" >> $GITHUB_ENV
             echo "CURATED_BUCKET=curated-datalake-us-east-1-${{ secrets.PROD_ACCOUNT_ID }}" >> $GITHUB_ENV
             echo "APPLICATION_BUCKET=application-datalake-us-east-1-${{ secrets.PROD_ACCOUNT_ID }}" >> $GITHUB_ENV
           elif [[ "${GITHUB_REF##*/}" == "stage" ]]; then
             echo "ENV=STAGE" >> $GITHUB_ENV
             echo "REPO_NAME=${{ github.repository }}" >> $GITHUB_ENV
-            echo "ROLE_ARN=arn:aws:iam::${{ secrets.STAGE_ACCOUNT_ID }}:role/github-actions-deploy-role" >> $GITHUB_ENV
+            echo "ROLE_ARN=arn:aws:iam::${{ secrets.STAGE_ACCOUNT_ID }}:role/CDKAutoRole" >> $GITHUB_ENV
             echo "STAGE_BUCKET=stage-datalake-us-east-1-${{ secrets.STAGE_ACCOUNT_ID }}" >> $GITHUB_ENV
             echo "CURATED_BUCKET=curated-datalake-us-east-1-${{ secrets.STAGE_ACCOUNT_ID }}" >> $GITHUB_ENV
             echo "APPLICATION_BUCKET=application-datalake-us-east-1-${{ secrets.STAGE_ACCOUNT_ID }}" >> $GITHUB_ENV
           else
             echo "ENV=DEV" >> $GITHUB_ENV
             echo "REPO_NAME=${{ github.repository }}" >> $GITHUB_ENV
-            echo "ROLE_ARN=arn:aws:iam::${{ secrets.DEV_ACCOUNT_ID }}:role/github-actions-deploy-role" >> $GITHUB_ENV
+            echo "ROLE_ARN=arn:aws:iam::${{ secrets.DEV_ACCOUNT_ID }}:role/CDKAutoRole" >> $GITHUB_ENV
             echo "STAGE_BUCKET=stage-datalake-us-east-1-${{ secrets.DEV_ACCOUNT_ID }}" >> $GITHUB_ENV
             echo "CURATED_BUCKET=curated-datalake-us-east-1-${{ secrets.DEV_ACCOUNT_ID }}" >> $GITHUB_ENV
             echo "APPLICATION_BUCKET=application-datalake-us-east-1-${{ secrets.DEV_ACCOUNT_ID }}" >> $GITHUB_ENV
