@@ -15,6 +15,7 @@ cdk deploy IngestionStack
 cdk deploy TransformationStack
 ```
 
+
 ## cdk.json
 
 - Core configuration
