@@ -63,4 +63,4 @@ jobs:
         run: cdk diff || true  # Prevents failure if there are changes
 
       - name: CDK Deploy
-        run: cdk deploy --all --require-approval never
+        run: cdk deploy StageBucketStack CuratedBucketStack ApplicationBucketStack  --require-approval never
