@@ -4,7 +4,6 @@
 ![CDK Deploy](https://github.com/cmalaga-code/demo-data-stack-ci-cd/actions/workflows/cdk_workflow.yml/badge.svg)
 
 
-
 ## app.py
 
 - CDK entry point
@@ -20,3 +19,4 @@ cdk deploy TransformationStack
 
 - Core configuration
 - Tells cdk cli how to run app and can store context values and feature flags
+
