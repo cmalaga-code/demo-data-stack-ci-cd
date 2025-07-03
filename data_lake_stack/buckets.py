@@ -1,5 +1,6 @@
 from aws_cdk import (
     Stack, Tags,
+    RemovalPolicy,
     aws_s3 as s3,
 )
 from constructs import Construct
@@ -14,7 +15,7 @@ class S3BucketStack(Stack):
             self, id,
             bucket_name=bucket_name,  # must be globally unique
             versioned=True,
-            removal_policy=s3.RemovalPolicy.DESTROY if is_dev else s3.RemovalPolicy.RETAIN,  # for dev/testing
+            removal_policy=RemovalPolicy.DESTROY if is_dev else RemovalPolicy.RETAIN,  # for dev/testing
             auto_delete_objects=is_dev  # only works with DESTROY
         )
         # Add tags to the stack
