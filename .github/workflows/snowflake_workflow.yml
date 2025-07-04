@@ -36,6 +36,7 @@ jobs:
           database = "${{ secrets.SNOWFLAKE_DATABASE }}"
           schema = "${{ secrets.SNOWFLAKE_SCHEMA }}"
           EOF
+          chmod 600 ~/.snowflake/config.toml
 
       - name: Run SQL files against Snowflake
         run: |
