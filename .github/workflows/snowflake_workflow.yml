@@ -42,5 +42,5 @@ jobs:
         run: |
           for file in $(ls sql/*.sql | sort); do
             echo "Running $file..."
-            snow sql -f "$file" --profile default
+            snow sql -f "$file"
           done  
