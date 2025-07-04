@@ -1,4 +1,4 @@
-name: Deploy with CDK
+name: Deploy AWS Assets
 
 on:
   push:
