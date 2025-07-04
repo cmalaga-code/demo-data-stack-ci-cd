@@ -27,7 +27,8 @@ jobs:
         run: |
           mkdir -p ~/.snowflake
           cat <<EOF > ~/.snowflake/config.toml
-          [default]
+          default_connection_name = "default"
+          [connections.default]
           account = "${{ secrets.SNOWFLAKE_ACCOUNT }}"
           user = "${{ secrets.SNOWFLAKE_USER }}"
           password = "${{ secrets.SNOWFLAKE_PASSWORD }}"
