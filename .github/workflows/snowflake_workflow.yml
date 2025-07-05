@@ -1,4 +1,4 @@
-name: Deploy Snowflake Structures 
+name: Deploy Snowflake Structures
 
 on:
   push:
