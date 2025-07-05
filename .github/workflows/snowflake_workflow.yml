@@ -41,15 +41,11 @@ jobs:
             echo "SNOWFLAKE_DATABASE=HEALTH_TECH" >> $GITHUB_ENV
             echo "SNOWFLAKE_SCHEMA=DEV" >> $GITHUB_ENV
           fi
-
-      - name: Write private key to file
-        run: |
-          echo "$SNOWFLAKE_PRIVATE_KEY" > /tmp/private_key.pem
-          chmod 600 /tmp/private_key.pem
           
-      - name: Decode private key
+      - name: Decode & write private key to file
         run: |
           echo "$SNOWFLAKE_PRIVATE_KEY" | base64 -d > /tmp/private_key.pem
+          chmod 600 /tmp/private_key.pem
 
       - name: Configure Snowflake CLI profile
         run: |
