@@ -46,6 +46,10 @@ jobs:
         run: |
           echo "$SNOWFLAKE_PRIVATE_KEY" > /tmp/private_key.pem
           chmod 600 /tmp/private_key.pem
+          
+      - name: Decode private key
+        run: |
+          echo "$SNOWFLAKE_PRIVATE_KEY" | base64 -d > /tmp/private_key.pem
 
       - name: Configure Snowflake CLI profile
         run: |
