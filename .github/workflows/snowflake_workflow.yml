@@ -66,5 +66,5 @@ jobs:
         run: |
           for file in $(ls sql/*.sql | sort); do
             echo "Running $file..."
-            snow --connection my_snowflake sql -f "$file"
+            snow sql -f "$file"
           done
