@@ -61,6 +61,7 @@ jobs:
           role = "$SNOWFLAKE_ROLE"
           warehouse = "$SNOWFLAKE_WAREHOUSE"
           EOF
+          chmod 600 ~/.snowflake/config.toml
 
       - name: Run SQL files against Snowflake
         run: |
