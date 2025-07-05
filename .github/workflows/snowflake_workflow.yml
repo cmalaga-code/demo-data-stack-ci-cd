@@ -65,6 +65,7 @@ jobs:
 
       - name: Run SQL files against Snowflake
         run: |
+          snow connection set-default my_snowflake
           for file in $(ls sql/*.sql | sort); do
             echo "Running $file..."
             snow sql -f "$file"
