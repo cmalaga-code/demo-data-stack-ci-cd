@@ -63,10 +63,26 @@ jobs:
           EOF
           chmod 600 ~/.snowflake/config.toml
 
-      - name: Run SQL files against Snowflake
+      - name: Deploy data warehouse galaxy model
         run: |
           snow connection set-default my_snowflake
-          for file in $(ls sql/*.sql | sort); do
+          for file in $(ls sql/data_warehouse_data_model/*.sql | sort); do
+            echo "Running $file..."
+            snow sql -f "$file"
+          done 
+
+      - name: Deploy data mart(s)
+        run: |
+          snow connection set-default my_snowflake
+          for file in $(ls sql/data_mart/*.sql | sort); do
+            echo "Running $file..."
+            snow sql -f "$file"
+          done 
+
+      - name: Deploy roles
+        run: |
+          snow connection set-default my_snowflake
+          for file in $(ls sql/role_permissions/*.sql | sort); do
             echo "Running $file..."
             snow sql -f "$file"
           done 
