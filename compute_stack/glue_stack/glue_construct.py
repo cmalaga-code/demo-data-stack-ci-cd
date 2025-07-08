@@ -8,17 +8,17 @@ from aws_cdk import (
 from constructs import Construct
 
 class StructuredCurateDataGlueStack(Stack):
-    def __init__(self, scope: Construct, id: str, glue_role, **kwargs):
+    def __init__(self, scope: Construct, id: str, **kwargs):
         super().__init__(scope, id, **kwargs)
 
         # Upload the PySpark script to an S3 asset
-        script_asset = s3_assets.Asset(self, "StructuredCurateDataGlueAsset",
+        script_asset = s3_assets.Asset(self, "structured-curate-data-glue-asset",
             path="src/glue/curate_layer/process_structured_data/structured.py"
         )
 
         # IAM Role for Glue
         glue_role = iam.Role(
-            self, "structured_curated_glue_role",
+            self, "structured-curated-glue-role",
             assumed_by=iam.ServicePrincipal("glue.amazonaws.com"),
             managed_policies=[
                 iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSGlueServiceRole")
@@ -39,8 +39,9 @@ class StructuredCurateDataGlueStack(Stack):
 
 
         # Define the Glue job
-        self.glue_job = glue.CfnJob(self, id,
-            name="pyspark_structured_curate_data_glue_job",
+        self.glue_job = glue.CfnJob(
+            self, id,
+            name="pyspark-structured-curate-data-glue-job",
             role=glue_role.role_arn,
             command=glue.CfnJob.JobCommandProperty(
                 name="glueetl",
@@ -59,13 +60,14 @@ class StructuredApplicationDataGlueStack(Stack):
         super().__init__(scope, id, **kwargs)
 
         # Upload the PySpark script to an S3 asset
-        script_asset = s3_assets.Asset(self, "StructuredApplicationDataGlueAsset",
+        script_asset = s3_assets.Asset(
+            self, "structured-application-data-glue-asset",
             path="src/glue/application_layer/process_structured_data/structured.py"
         )
 
         # IAM Role for Glue
         glue_role = iam.Role(
-            self, "structured_application_glue_role",
+            self, "structured-application-glue-role",
             assumed_by=iam.ServicePrincipal("glue.amazonaws.com"),
             managed_policies=[
                 iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSGlueServiceRole")
@@ -86,8 +88,9 @@ class StructuredApplicationDataGlueStack(Stack):
 
 
         # Define the Glue job
-        self.glue_job = glue.CfnJob(self, id,
-            name="pyspark_structured_application_data_glue_job",
+        self.glue_job = glue.CfnJob(
+            self, id,
+            name="pyspark-structured-application-data-glue-job",
             role=glue_role.role_arn,
             command=glue.CfnJob.JobCommandProperty(
                 name="glueetl",
@@ -106,13 +109,14 @@ class SemiStructuredCurateDataGlueStack(Stack):
         super().__init__(scope, id, **kwargs)
 
         # Upload the PySpark script to an S3 asset
-        script_asset = s3_assets.Asset(self, "SemiStructuredCurateDataGlueAsset",
+        script_asset = s3_assets.Asset(
+            self, "semi-structured-curate-data-glue-asset",
             path="src/glue/curate_layer/process_semi_structured_data/semi_structured.py"
         )
 
         # IAM Role for Glue
         glue_role = iam.Role(
-            self, "semi_structured_curated_glue_role",
+            self, "semi-structured-curated-glue-role",
             assumed_by=iam.ServicePrincipal("glue.amazonaws.com"),
             managed_policies=[
                 iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSGlueServiceRole")
@@ -132,8 +136,9 @@ class SemiStructuredCurateDataGlueStack(Stack):
         ))
 
         # Define the Glue job
-        self.glue_job = glue.CfnJob(self, id,
-            name="pyspark_semi_structured_curate_data_glue_job",
+        self.glue_job = glue.CfnJob(
+            self, id,
+            name="pyspark-semi-structured-curate-data-glue-job",
             role=glue_role.role_arn,
             command=glue.CfnJob.JobCommandProperty(
                 name="glueetl",
@@ -153,13 +158,13 @@ class UnStructuredCurateDataGlueStack(Stack):
         super().__init__(scope, id, **kwargs)
 
         # Upload the PySpark script to an S3 asset
-        script_asset = s3_assets.Asset(self, "UnStructuredCurateDataGlueAsset",
+        script_asset = s3_assets.Asset(self, "unstructured-curate-data-glue-asset",
             path="src/glue/curate_layer/process_unstructured_data/unstructured.py"
         )
 
         # IAM Role for Glue
         glue_role = iam.Role(
-            self, "unstructured_curated_glue_role",
+            self, "unstructured-curated-glue-role",
             assumed_by=iam.ServicePrincipal("glue.amazonaws.com"),
             managed_policies=[
                 iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSGlueServiceRole")
@@ -179,8 +184,9 @@ class UnStructuredCurateDataGlueStack(Stack):
         ))
 
         # Define the Glue job
-        self.glue_job = glue.CfnJob(self, id,
-            name="pyspark_unstructured_curate_data_glue_job",
+        self.glue_job = glue.CfnJob(
+            self, id,
+            name="pyspark-unstructured-curate-data-glue-job",
             role=glue_role.role_arn,
             command=glue.CfnJob.JobCommandProperty(
                 name="glueetl",
@@ -199,13 +205,14 @@ class UnStructuredApplicationDataGlueStack(Stack):
         super().__init__(scope, id, **kwargs)
 
         # Upload the PySpark script to an S3 asset
-        script_asset = s3_assets.Asset(self, "UnStructuredApplicationDataGlueAsset",
+        script_asset = s3_assets.Asset(
+            self, "unstructured-application-data-glue-asset",
             path="src/glue/application_layer/process_unstructured_data/unstructured.py"
         )
 
         # IAM Role for Glue
         glue_role = iam.Role(
-            self, "unstructured_application_glue_role",
+            self, "unstructured-application-glue-role",
             assumed_by=iam.ServicePrincipal("glue.amazonaws.com"),
             managed_policies=[
                 iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSGlueServiceRole")
@@ -225,8 +232,9 @@ class UnStructuredApplicationDataGlueStack(Stack):
         ))
 
         # Define the Glue job
-        self.glue_job = glue.CfnJob(self, id,
-            name="pyspark_unstructured_application_data_glue_job",
+        self.glue_job = glue.CfnJob(
+            self, id,
+            name="pyspark-unstructured-application-data-glue-job",
             role=glue_role.role_arn,
             command=glue.CfnJob.JobCommandProperty(
                 name="glueetl",

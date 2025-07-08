@@ -8,7 +8,7 @@ class GitHubOIDCStack(Stack):
 
         # 1. Define the OIDC provider for GitHub
         provider = iam.OpenIdConnectProvider(
-            self, "GitHubOIDCProvider",
+            self, id,
             url="https://token.actions.githubusercontent.com",
             client_ids=["sts.amazonaws.com"]
         )
@@ -23,7 +23,7 @@ class GitHubOIDCStack(Stack):
 
         # 3. Create the IAM role that GitHub Actions can assume
         role = iam.Role(
-            self, "GitHubActionsRole",
+            self, "github-action-role",
             role_name="github-actions-deploy-role",
             assumed_by=github_principal,
             description="Role assumed by GitHub Actions via OIDC",

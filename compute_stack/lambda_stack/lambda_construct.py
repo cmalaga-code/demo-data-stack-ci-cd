@@ -39,7 +39,7 @@ class StructuredCurateDataLambdaStack(Stack):
         super().__init__(scope, id, **kwargs)
 
         self.fn = _lambda.Function(
-            self, "ProcessStructuredDataCurateLambda",
+            self, id,
             runtime=_lambda.Runtime.PYTHON_3_12,
             handler="structured.handler",
             timeout=Duration.seconds(80),
@@ -63,7 +63,7 @@ class StructuredApplicationDataLambdaStack(Stack):
         super().__init__(scope, id, **kwargs)
 
         self.fn = _lambda.Function(
-            self, "ProcessStructuredDataApplicationLambda",
+            self, id,
             runtime=_lambda.Runtime.PYTHON_3_12,
             handler="structured.handler",
             timeout=Duration.seconds(80),
@@ -87,7 +87,7 @@ class SemiStructuredCurateDataLambdaStack(Stack):
         super().__init__(scope, id, **kwargs)
 
         self.fn = _lambda.Function(
-            self, "ProcessSemiStructuredDataCurateLambda",
+            self, id,
             runtime=_lambda.Runtime.PYTHON_3_12,
             handler="semi_structured.handler",
             timeout=Duration.seconds(80),
@@ -112,7 +112,7 @@ class UnStructuredCurateDataLambdaStack(Stack):
         super().__init__(scope, id, **kwargs)
 
         self.fn = _lambda.Function(
-            self, "ProcessUnStructuredDataCurateLambda",
+            self, id,
             runtime=_lambda.Runtime.PYTHON_3_12,
             handler="unstructured.handler",
             timeout=Duration.seconds(80),

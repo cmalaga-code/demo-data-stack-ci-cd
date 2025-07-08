@@ -45,44 +45,44 @@ if __name__ == "__main__":
 
     # OIDC Authentication For Temp Credentials (Temp Obtain access to Role)
 
-    GitHubOIDCStack(app, "GitHubOIDCStack")
+    GitHubOIDCStack(app, "gitHub-oidc-stack")
 
     # data lake stack
 
     if bucket_exists(os.environ.get("STAGE_BUCKET")):
-        stage_bucket = s3.Bucket.from_bucket_name(app, "stage_bucket", os.environ.get("STAGE_BUCKET"))
+        stage_bucket = s3.Bucket.from_bucket_name(app, "stage-bucket", os.environ.get("STAGE_BUCKET"))
     else:
-        stage_bucket = S3BucketStack(app, "stage_bucket", bucket_name=os.environ.get("STAGE_BUCKET"), env_name=os.environ.get("ENV"))
+        stage_bucket = S3BucketStack(app, "stage-bucket", bucket_name=os.environ.get("STAGE_BUCKET"), env_name=os.environ.get("ENV"))
 
     if bucket_exists(os.environ.get("CURATED_BUCKET")):
-        curated_bucket = s3.Bucket.from_bucket_name(app, "curated_bucket", os.environ.get("CURATED_BUCKET"))
+        curated_bucket = s3.Bucket.from_bucket_name(app, "curated-bucket", os.environ.get("CURATED_BUCKET"))
     else:
-        curated_bucket = S3BucketStack(app, "curated_bucket", bucket_name=os.environ.get("CURATED_BUCKET"), env_name=os.environ.get("ENV"))
+        curated_bucket = S3BucketStack(app, "curated-bucket", bucket_name=os.environ.get("CURATED_BUCKET"), env_name=os.environ.get("ENV"))
 
     if bucket_exists(os.environ.get("APPLICATION_BUCKET")):
-        curated_bucket = s3.Bucket.from_bucket_name(app, "application_bucket", os.environ.get("APPLICATION_BUCKET"))
+        curated_bucket = s3.Bucket.from_bucket_name(app, "application-bucket", os.environ.get("APPLICATION_BUCKET"))
     else:
-        application_bucket = S3BucketStack(app, "application_bucket", bucket_name=os.environ.get("APPLICATION_BUCKET"), env_name=os.environ.get("ENV"))
+        application_bucket = S3BucketStack(app, "application-bucket", bucket_name=os.environ.get("APPLICATION_BUCKET"), env_name=os.environ.get("ENV"))
 
     # lambda and glue stack
 
-    structured_curated_lambda_stack = StructuredCurateDataLambdaStack(app, "structured_curated_lambda_stack")
-    structured_application_lambda_stack = StructuredApplicationDataLambdaStack(app, "structured_application_lambda_stack")
-    semi_structured_curated_lambda_stack = SemiStructuredCurateDataLambdaStack(app, "semi_structured_curated_lambda_stack")
-    unstructured_curated_lambda_stack = UnStructuredCurateDataLambdaStack(app, "unstructured_curated_lambda_stack")
-    unstructured_application_lambda_stack = UnStructuredApplicationDataLambdaStack(app, "unstructured_application_lambda_stack")
+    structured_curated_lambda_stack = StructuredCurateDataLambdaStack(app, "structured-curated-lambda-stack")
+    structured_application_lambda_stack = StructuredApplicationDataLambdaStack(app, "structured-application-lambda-stack")
+    semi_structured_curated_lambda_stack = SemiStructuredCurateDataLambdaStack(app, "semi-structured-curated-lambda-stack")
+    unstructured_curated_lambda_stack = UnStructuredCurateDataLambdaStack(app, "unstructured-curated-lambda-stack")
+    unstructured_application_lambda_stack = UnStructuredApplicationDataLambdaStack(app, "unstructured-application-lambda-stack")
 
     
-    structured_curated_glue_stack = StructuredCurateDataGlueStack(app, "structured_curated_glue_stack")
-    structured_application_glue_stack = StructuredApplicationDataGlueStack(app, "structured_application_glue_stack")
-    semi_structured_curated_glue_stack = SemiStructuredCurateDataGlueStack(app, "semi_structured_curated_glue_stack")
-    unstructured_curated_glue_stack = UnStructuredCurateDataGlueStack(app, "unstructured_curated_glue_stack")
-    unstructured_application_glue_stack = UnStructuredApplicationDataGlueStack(app, "unstructured_application_glue_stack")
+    structured_curated_glue_stack = StructuredCurateDataGlueStack(app, "structured-curated-glue-stack")
+    structured_application_glue_stack = StructuredApplicationDataGlueStack(app, "structured-application-glue-stack")
+    semi_structured_curated_glue_stack = SemiStructuredCurateDataGlueStack(app, "semi-structured-curated-glue-stack")
+    unstructured_curated_glue_stack = UnStructuredCurateDataGlueStack(app, "unstructured-curated-glue-stack")
+    unstructured_application_glue_stack = UnStructuredApplicationDataGlueStack(app, "unstructured-application-glue-stack")
 
     # event orchestration
 
     orchestration_stack = OrchestrationStack(
-        app, "data_stack_orchestration", 
+        app, "data-stack-orchestration", 
         structured_curated_lambda_stack.fn, 
         structured_application_lambda_stack.fn,
         semi_structured_curated_lambda_stack.fn,
@@ -95,7 +95,7 @@ if __name__ == "__main__":
         unstructured_application_glue_stack.glue_job.name
     )
 
-    meta_lambda_stack = MetaLambdaStack(app, "meta_lambda_stack", orchestration_stack)
+    meta_lambda_stack = MetaLambdaStack(app, "meta-lambda-stack", orchestration_stack)
     
     # event notification stage -> curated
 

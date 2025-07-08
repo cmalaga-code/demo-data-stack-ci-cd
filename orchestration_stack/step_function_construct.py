@@ -180,49 +180,49 @@ class OrchestrationStack(Stack):
             Condition.and_(
                 Condition.number_greater_than("$.fileSize", SIZE_THRESHOLD),
                 Condition.string_matches("$.bucketNameLower", "*curated*"),
-                Condition.string_matches("$.objectKey", "*type=structured*"),
+                Condition.string_matches("$.objectKey", "*type=structured*")
             ),
             structured_application_glue_task.next(success)
         ).when(
             Condition.and_(
                 Condition.number_less_than("$.fileSize", SIZE_THRESHOLD),
                 Condition.string_matches("$.bucketNameLower", "*stage*"),
-                Condition.string_matches("$.objectKey", "*type=semi-structured*"),
+                Condition.string_matches("$.objectKey", "*type=semi-structured*")
             ),
             semi_structured_curated_lambda_fn_task.next(success)
         ).when(
             Condition.and_(
                 Condition.number_greater_than("$.fileSize", SIZE_THRESHOLD),
                 Condition.string_matches("$.bucketNameLower", "*stage*"),
-                Condition.string_matches("$.objectKey", "*type=semi-structured*"),
+                Condition.string_matches("$.objectKey", "*type=semi-structured*")
             ),
             semi_structured_curated_glue_task.next(success)
         ).when(
             Condition.and_(
                 Condition.number_less_than("$.fileSize", SIZE_THRESHOLD),
                 Condition.string_matches("$.bucketNameLower", "*stage*"),
-                Condition.string_matches("$.objectKey", "*type=unstructured*"),
+                Condition.string_matches("$.objectKey", "*type=unstructured*")
             ),
             unstructured_curated_lambda_fn_task.next(success)
         ).when(
             Condition.and_(
                 Condition.number_greater_than("$.fileSize", SIZE_THRESHOLD),
                 Condition.string_matches("$.bucketNameLower", "*stage*"),
-                Condition.string_matches("$.objectKey", "*type=unstructured*"),
+                Condition.string_matches("$.objectKey", "*type=unstructured*")
             ),
             unstructured_curated_glue_stack_task.next(success)
         ).when(
             Condition.and_(
                 Condition.number_less_than("$.fileSize", SIZE_THRESHOLD),
                 Condition.string_matches("$.bucketNameLower", "*curated*"),
-                Condition.string_matches("$.objectKey", "*type=unstructured*"),
+                Condition.string_matches("$.objectKey", "*type=unstructured*")
             ),
             unstructured_application_lambda_fn_task.next(success)
         ).when(
             Condition.and_(
                 Condition.number_greater_than("$.fileSize", SIZE_THRESHOLD),
                 Condition.string_matches("$.bucketNameLower", "*curated*"),
-                Condition.string_matches("$.objectKey", "*type=unstructured*"),
+                Condition.string_matches("$.objectKey", "*type=unstructured*")
             ),
             unstructured_application_glue_stack_task.next(success)
         ).otherwise(success)
