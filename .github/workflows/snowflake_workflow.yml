@@ -86,3 +86,10 @@ jobs:
             echo "Running $file..."
             snow sql -f "$file"
           done 
+
+      - name: Deploy external stage
+        run: |
+          snow connection set-default my_snowflake
+          snow sql -q "CREATE STAGE ${BRANCH_NAME}_model_claims_stage"
+          snow sql -q "CREATE STAGE ${BRANCH_NAME}_model_lab_stage"
+          snow sql -q "CREATE STAGE ${BRANCH_NAME}_model_application_stage"

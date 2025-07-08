@@ -11,6 +11,7 @@ class ImportedBucketStack(Stack):
         super().__init__(scope, id, **kwargs)
         logical_id = f"imported-bucket-{bucket_name}"
         self.bucket = s3.Bucket.from_bucket_name(self, logical_id, bucket_name)
+        self.imported = True
 
 class S3BucketStack(Stack):
     def __init__(self, scope: Construct, id: str, bucket_name: str, env_name: str, **kwargs):
@@ -25,6 +26,7 @@ class S3BucketStack(Stack):
             removal_policy=RemovalPolicy.DESTROY if is_dev else RemovalPolicy.RETAIN,  # for dev/testing
             auto_delete_objects=is_dev  # only works with DESTROY
         )
+        self.imported = False
 
         # Add tags to the stack
         Tags.of(self).add("Environment", env_name)

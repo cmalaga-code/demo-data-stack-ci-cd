@@ -31,6 +31,7 @@ def bucket_exists(bucket_name: str) -> bool:
         if error_code == "404":
             return False
         raise
+    
 
 if __name__ == "__main__":
     app = App()
@@ -100,67 +101,76 @@ if __name__ == "__main__":
     meta_lambda_stack = MetaLambdaStack(app, "meta-lambda-stack", orchestration_stack)
     
     # event notification stage -> curated
-    stage_bucket_stack.bucket.add_event_notification(
-        s3.EventType.OBJECT_CREATED_PUT,
-        s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-        s3.NotificationKeyFilter(prefix="claims/type=structured/", suffix=".csv")
-    )
+    if not stage_bucket_stack.imported:
+        stage_bucket_stack.bucket.add_event_notification(
+            s3.EventType.OBJECT_CREATED_PUT,
+            s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
+            s3.NotificationKeyFilter(prefix="claims/type=structured/", suffix=".csv")
+        )
+    
+    if not stage_bucket_stack.imported:
+        stage_bucket_stack.bucket.add_event_notification(
+            s3.EventType.OBJECT_CREATED_PUT,
+            s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
+            s3.NotificationKeyFilter(prefix="patient/type=structured/", suffix=".csv")
+        )
 
-    stage_bucket_stack.bucket.add_event_notification(
-        s3.EventType.OBJECT_CREATED_PUT,
-        s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-        s3.NotificationKeyFilter(prefix="patient/type=structured/", suffix=".csv")
-    )
+    if not stage_bucket_stack.imported:
+        stage_bucket_stack.bucket.add_event_notification(
+            s3.EventType.OBJECT_CREATED_PUT,
+            s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
+            s3.NotificationKeyFilter(prefix="provider/type=structured/", suffix=".csv")
+        )
 
-    stage_bucket_stack.bucket.add_event_notification(
-        s3.EventType.OBJECT_CREATED_PUT,
-        s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-        s3.NotificationKeyFilter(prefix="provider/type=structured/", suffix=".csv")
-    )
-
-    stage_bucket_stack.bucket.add_event_notification(
-        s3.EventType.OBJECT_CREATED_PUT,
-        s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-        s3.NotificationKeyFilter(prefix="lab/type=semi-structured/", suffix=".json")
-    )
-
-    stage_bucket_stack.bucket.add_event_notification(
-        s3.EventType.OBJECT_CREATED_PUT,
-        s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-        s3.NotificationKeyFilter(prefix="lab/type=unstructured/", suffix=".jpeg")
-    )
+    if not stage_bucket_stack.imported:
+        stage_bucket_stack.bucket.add_event_notification(
+            s3.EventType.OBJECT_CREATED_PUT,
+            s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
+            s3.NotificationKeyFilter(prefix="lab/type=semi-structured/", suffix=".json")
+        )
+    
+    if not stage_bucket_stack.imported:
+        stage_bucket_stack.bucket.add_event_notification(
+            s3.EventType.OBJECT_CREATED_PUT,
+            s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
+            s3.NotificationKeyFilter(prefix="lab/type=unstructured/", suffix=".jpeg")
+        )
 
     # event notification curated (clean) -> application (model data)
+    if not curated_bucket_stack.imported:
+        curated_bucket_stack.bucket.add_event_notification(
+            s3.EventType.OBJECT_CREATED_PUT,
+            s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
+            s3.NotificationKeyFilter(prefix="claims/type=structured/", suffix=".parquet")
+        )
+    
+    if not curated_bucket_stack.imported:
+        curated_bucket_stack.bucket.add_event_notification(
+            s3.EventType.OBJECT_CREATED_PUT,
+            s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
+            s3.NotificationKeyFilter(prefix="patient/type=structured/", suffix=".parquet")
+        )
 
-    curated_bucket_stack.bucket.add_event_notification(
-        s3.EventType.OBJECT_CREATED_PUT,
-        s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-        s3.NotificationKeyFilter(prefix="claims/type=structured/", suffix=".parquet")
-    )
+    if not curated_bucket_stack.imported:
+        curated_bucket_stack.bucket.add_event_notification(
+            s3.EventType.OBJECT_CREATED_PUT,
+            s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
+            s3.NotificationKeyFilter(prefix="provider/type=structured/", suffix=".parquet")
+        )
 
-    curated_bucket_stack.bucket.add_event_notification(
-        s3.EventType.OBJECT_CREATED_PUT,
-        s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-        s3.NotificationKeyFilter(prefix="patient/type=structured/", suffix=".parquet")
-    )
-
-    curated_bucket_stack.bucket.add_event_notification(
-        s3.EventType.OBJECT_CREATED_PUT,
-        s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-        s3.NotificationKeyFilter(prefix="provider/type=structured/", suffix=".parquet")
-    )
-
-    curated_bucket_stack.bucket.add_event_notification(
-        s3.EventType.OBJECT_CREATED_PUT,
-        s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-        s3.NotificationKeyFilter(prefix="lab/type=structured/", suffix=".parquet")
-    )
-
-    curated_bucket_stack.bucket.add_event_notification(
-        s3.EventType.OBJECT_CREATED_PUT,
-        s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-        s3.NotificationKeyFilter(prefix="lab/type=unstructured/", suffix=".jpeg")
-    )
+    if not curated_bucket_stack.imported:
+        curated_bucket_stack.bucket.add_event_notification(
+            s3.EventType.OBJECT_CREATED_PUT,
+            s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
+            s3.NotificationKeyFilter(prefix="lab/type=structured/", suffix=".parquet")
+        )
+    
+    if not curated_bucket_stack.imported:
+        curated_bucket_stack.bucket.add_event_notification(
+            s3.EventType.OBJECT_CREATED_PUT,
+            s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
+            s3.NotificationKeyFilter(prefix="lab/type=unstructured/", suffix=".jpeg")
+        )
 
 
     # Synthesize app (executes code and generates CloudFormation Template in JSON format)
