@@ -1,5 +1,6 @@
 import os
 from aws_cdk import aws_iam as iam, Stack, Duration
+from aws_cdk import App
 from constructs import Construct
 
 class GitHubOIDCStack(Stack):
@@ -13,7 +14,7 @@ class GitHubOIDCStack(Stack):
             client_ids=["sts.amazonaws.com"]
         )
         # 2. Define the GitHub repo that can assume the role
-        repo = os.environ.get("REPO_NAME")  # Replace with your actual GitHub org/repo
+        repo = self.node.try_get_context("repoName")  # Replace with your actual GitHub org/repo
 
         github_principal = iam.OpenIdConnectPrincipal(provider).with_conditions({
             "StringLike": {
@@ -46,3 +47,8 @@ class GitHubOIDCStack(Stack):
                 ]
             )
         )
+
+if __name__== "__main__":
+    app = App()
+    # OIDC Authentication For Temp Credentials (Temp Obtain access to Role) -- this is for the docker container and only execute once
+    GitHubOIDCStack(app, "gitHub-oidc-stack")

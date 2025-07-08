@@ -4,7 +4,6 @@ from aws_cdk import App, aws_s3 as s3, aws_s3_notifications as s3n
 from botocore.exceptions import ClientError
 
 from data_lake_stack.buckets import S3BucketStack
-from github_oidc_stack.oidc_construct import GitHubOIDCStack
 from orchestration_stack.step_function_construct import OrchestrationStack
 from compute_stack.lambda_stack.lambda_construct import (
     StructuredCurateDataLambdaStack,
@@ -43,9 +42,6 @@ if __name__ == "__main__":
     if missing:
         raise ValueError(f"Missing required environment variables: {', '.join(missing)}")
 
-    # OIDC Authentication For Temp Credentials (Temp Obtain access to Role)
-
-    GitHubOIDCStack(app, "gitHub-oidc-stack")
 
     # data lake stack
 
