@@ -1,5 +1,7 @@
+import os
 from aws_cdk import (
     Stack,
+    aws_iam as iam,
     aws_lambda as _lambda,
     Duration
 )
@@ -9,6 +11,29 @@ class MetaLambdaStack(Stack):
     def __init__(self, scope: Construct, id: str, orchestration_stack, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
+        lambda_role = iam.Role(
+            self, "meta-lambda-exection-role",
+            assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
+            managed_policies=[
+                iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaBasicExecutionRole")
+            ]
+        )
+
+        lambda_role.add_to_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "s3:GetObject",
+                    "states:StartExecution"
+                ],
+                resources=[
+                    f"arn:aws:s3:::{os.environ.get('STAGE_BUCKET')}/*",
+                    f"arn:aws:s3:::{os.environ.get('CURATED_BUCKET')}/*",
+                    f"arn:aws:s3:::{os.environ.get('APPLICATION_BUCKET')}/*",
+                    orchestration_stack.state_machine.state_machine_arn
+                ]
+            )
+        )
+
         self.meta_lambda = _lambda.DockerImageFunction(
             self, "meta-lambda-function",
             code=_lambda.DockerImageCode.from_image_asset("src/_lambda_/process_meta_data"),
@@ -17,43 +42,137 @@ class MetaLambdaStack(Stack):
             description="Triggered by S3 to extract metadata and start Step Function",
             environment={
                 "STATE_MACHINE_ARN": orchestration_stack.state_machine.state_machine_arn
-            }
+            },
+            role=lambda_role
         )
 
 class StructuredCurateDataLambdaStack(Stack):
     def __init__(self, scope: Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
+        lambda_role = iam.Role(
+            self, "structured-curate-lambda-exection-role",
+            assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
+            managed_policies=[
+                iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaBasicExecutionRole")
+            ]
+        )
+
+        lambda_role.add_to_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "s3:GetObject",
+                ],
+                resources=[
+                    f"arn:aws:s3:::{os.environ.get('STAGE_BUCKET')}/*"
+                ]
+            )
+        )
+
+        lambda_role.add_to_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "s3:PutObject"
+                ],
+                resources=[
+                    f"arn:aws:s3:::{os.environ.get('CURATED_BUCKET')}/*"
+                ]
+            )
+        )
+
         self.fn = _lambda.DockerImageFunction(
             self, "structured-curate-lambda",
             code=_lambda.DockerImageCode.from_image_asset("src/_lambda_/curate_layer/process_structured_data"),
             timeout=Duration.seconds(80),
             memory_size=4096, # MB -- 4GB
-            description="State task for state machine .. process structured data that is not big data"
+            description="State task for state machine .. process structured data that is not big data",
+            role=lambda_role
         )
 
 class StructuredApplicationDataLambdaStack(Stack):
     def __init__(self, scope: Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
+        lambda_role = iam.Role(
+            self, "structured-application-lambda-exection-role",
+            assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
+            managed_policies=[
+                iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaBasicExecutionRole")
+            ]
+        )
+
+        lambda_role.add_to_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "s3:GetObject",
+                ],
+                resources=[
+                    f"arn:aws:s3:::{os.environ.get('CURATED_BUCKET')}/*"
+                ]
+            )
+        )
+
+        lambda_role.add_to_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "s3:PutObject"
+                ],
+                resources=[
+                    f"arn:aws:s3:::{os.environ.get('APPLICATION_BUCKET')}/*"
+                ]
+            )
+        )
+
         self.fn = _lambda.DockerImageFunction(
             self, "structured-application-lambda",
             code=_lambda.DockerImageCode.from_image_asset("src/_lambda_/application_layer/process_structured_data"),
             timeout=Duration.seconds(80),
             memory_size=4096, # MB -- 4GB
-            description="State task for state machine .. process structured data that is not big data"
+            description="State task for state machine .. process structured data that is not big data",
+            role=lambda_role
         )
 
 class SemiStructuredCurateDataLambdaStack(Stack):
     def __init__(self, scope: Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
+        lambda_role = iam.Role(
+            self, "semi-structured-curate-lambda-exection-role",
+            assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
+            managed_policies=[
+                iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaBasicExecutionRole")
+            ]
+        )
+
+        lambda_role.add_to_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "s3:GetObject",
+                ],
+                resources=[
+                    f"arn:aws:s3:::{os.environ.get('STAGE_BUCKET')}/*"
+                ]
+            )
+        )
+
+        lambda_role.add_to_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "s3:PutObject"
+                ],
+                resources=[
+                    f"arn:aws:s3:::{os.environ.get('CURATED_BUCKET')}/*"
+                ]
+            )
+        )
+
         self.fn = _lambda.DockerImageFunction(
             self, "semi-structured-curate-lambda",
             code=_lambda.DockerImageCode.from_image_asset("src/_lambda_/curate_layer/process_semi_structured_data"),
             timeout=Duration.seconds(80),
             memory_size=4096, # MB -- 4GB
-            description="State task for state machine .. process structured data that is not big data"
+            description="State task for state machine .. process structured data that is not big data",
+            role=lambda_role
         )
 
 
@@ -61,17 +180,79 @@ class UnStructuredCurateDataLambdaStack(Stack):
     def __init__(self, scope: Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
+        lambda_role = iam.Role(
+            self, "unstructured-curate-lambda-exection-role",
+            assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
+            managed_policies=[
+                iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaBasicExecutionRole")
+            ]
+        )
+
+        lambda_role.add_to_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "s3:GetObject",
+                ],
+                resources=[
+                    f"arn:aws:s3:::{os.environ.get('STAGE_BUCKET')}/*"
+                ]
+            )
+        )
+
+        lambda_role.add_to_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "s3:PutObject"
+                ],
+                resources=[
+                    f"arn:aws:s3:::{os.environ.get('CURATED_BUCKET')}/*"
+                ]
+            )
+        )
+
+
         self.fn = _lambda.DockerImageFunction(
             self, "unstructured-curate-lambda",
             code=_lambda.DockerImageCode.from_image_asset("src/_lambda_/curate_layer/process_unstructured_data"),
             timeout=Duration.seconds(80),
             memory_size=4096, # MB -- 4GB
-            description="State task for state machine .. process unstructured data that is not big data"
+            description="State task for state machine .. process unstructured data that is not big data",
+            role=lambda_role
         )
 
 class UnStructuredApplicationDataLambdaStack(Stack):
     def __init__(self, scope: Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
+
+        lambda_role = iam.Role(
+            self, "unstructured-application-lambda-exection-role",
+            assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
+            managed_policies=[
+                iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaBasicExecutionRole")
+            ]
+        )
+
+        lambda_role.add_to_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "s3:GetObject",
+                ],
+                resources=[
+                    f"arn:aws:s3:::{os.environ.get('CURATED_BUCKET')}/*"
+                ]
+            )
+        )
+
+        lambda_role.add_to_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "s3:PutObject"
+                ],
+                resources=[
+                    f"arn:aws:s3:::{os.environ.get('APPLICATION_BUCKET')}/*"
+                ]
+            )
+        )
 
         self.fn = _lambda.DockerImageFunction(
             self, "unstructured-application-lambda",
@@ -79,6 +260,7 @@ class UnStructuredApplicationDataLambdaStack(Stack):
             timeout=Duration.seconds(80),
             memory_size=4096, # MB -- 4GB
             description="State task for state machine .. process unstructured data that is not big data",
+            role=lambda_role
         )
 
     

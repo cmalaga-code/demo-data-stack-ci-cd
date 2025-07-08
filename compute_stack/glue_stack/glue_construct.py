@@ -28,8 +28,7 @@ class StructuredCurateDataGlueStack(Stack):
         glue_role.add_to_policy(iam.PolicyStatement(
             actions=[
                 "s3:GetObject",
-                "s3:PutObject",
-                "s3:ListBucket"
+                "s3:PutObject"
             ],
             resources=[
                 f"arn:aws:s3:::{os.environ.get('STAGE_BUCKET')}/*",
@@ -77,8 +76,7 @@ class StructuredApplicationDataGlueStack(Stack):
         glue_role.add_to_policy(iam.PolicyStatement(
             actions=[
                 "s3:GetObject",
-                "s3:PutObject",
-                "s3:ListBucket"
+                "s3:PutObject"
             ],
             resources=[
                 f"arn:aws:s3:::{os.environ.get('CURATED_BUCKET')}/*",
@@ -126,8 +124,7 @@ class SemiStructuredCurateDataGlueStack(Stack):
         glue_role.add_to_policy(iam.PolicyStatement(
             actions=[
                 "s3:GetObject",
-                "s3:PutObject",
-                "s3:ListBucket"
+                "s3:PutObject"
             ],
             resources=[
                 f"arn:aws:s3:::{os.environ.get('STAGE_BUCKET')}/*",
@@ -174,8 +171,7 @@ class UnStructuredCurateDataGlueStack(Stack):
         glue_role.add_to_policy(iam.PolicyStatement(
             actions=[
                 "s3:GetObject",
-                "s3:PutObject",
-                "s3:ListBucket"
+                "s3:PutObject"
             ],
             resources=[
                 f"arn:aws:s3:::{os.environ.get('STAGE_BUCKET')}/*",
@@ -222,8 +218,7 @@ class UnStructuredApplicationDataGlueStack(Stack):
         glue_role.add_to_policy(iam.PolicyStatement(
             actions=[
                 "s3:GetObject",
-                "s3:PutObject",
-                "s3:ListBucket"
+                "s3:PutObject"
             ],
             resources=[
                 f"arn:aws:s3:::{os.environ.get('CURATED_BUCKET')}/*",
