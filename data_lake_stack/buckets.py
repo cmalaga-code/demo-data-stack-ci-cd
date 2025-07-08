@@ -22,18 +22,6 @@ class S3BucketStack(Stack):
             auto_delete_objects=is_dev  # only works with DESTROY
         )
 
-        content_type_enforce_policy = iam.PolicyStatement(
-            effect=iam.Effect.DENY,
-            actions=["s3:PutObject"],
-            resources=[self.bucket.arn_for_objects("*")],
-            conditions={
-                "Null": {
-                    "s3:ContentType": "true"
-                }
-            },
-            principals=[iam.AnyPrincipal()]
-        )
-        self.bucket.add_to_resource_policy(content_type_enforce_policy)
         # Add tags to the stack
         Tags.of(self).add("Environment", env_name)
         Tags.of(self).add("Project", "DataLake")
