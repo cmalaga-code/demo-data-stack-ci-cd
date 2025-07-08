@@ -40,7 +40,7 @@ class StructuredCurateDataGlueStack(Stack):
 
         # Define the Glue job
         self.glue_job = glue.CfnJob(
-            self, id,
+            self, "pyspark-structured-curate-data-glue-job",
             name="pyspark-structured-curate-data-glue-job",
             role=glue_role.role_arn,
             command=glue.CfnJob.JobCommandProperty(
@@ -89,7 +89,7 @@ class StructuredApplicationDataGlueStack(Stack):
 
         # Define the Glue job
         self.glue_job = glue.CfnJob(
-            self, id,
+            self, "pyspark-structured-application-data-glue-job",
             name="pyspark-structured-application-data-glue-job",
             role=glue_role.role_arn,
             command=glue.CfnJob.JobCommandProperty(
@@ -137,7 +137,7 @@ class SemiStructuredCurateDataGlueStack(Stack):
 
         # Define the Glue job
         self.glue_job = glue.CfnJob(
-            self, id,
+            self, "pyspark-semi-structured-curate-data-glue-job",
             name="pyspark-semi-structured-curate-data-glue-job",
             role=glue_role.role_arn,
             command=glue.CfnJob.JobCommandProperty(
@@ -185,7 +185,7 @@ class UnStructuredCurateDataGlueStack(Stack):
 
         # Define the Glue job
         self.glue_job = glue.CfnJob(
-            self, id,
+            self, "pyspark-unstructured-curate-data-glue-job",
             name="pyspark-unstructured-curate-data-glue-job",
             role=glue_role.role_arn,
             command=glue.CfnJob.JobCommandProperty(
@@ -233,7 +233,7 @@ class UnStructuredApplicationDataGlueStack(Stack):
 
         # Define the Glue job
         self.glue_job = glue.CfnJob(
-            self, id,
+            self, "pyspark-unstructured-application-data-glue-job",
             name="pyspark-unstructured-application-data-glue-job",
             role=glue_role.role_arn,
             command=glue.CfnJob.JobCommandProperty(
