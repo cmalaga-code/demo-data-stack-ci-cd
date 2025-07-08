@@ -230,9 +230,10 @@ class OrchestrationStack(Stack):
 
         self.state_machine = sfn.StateMachine(
             self, id,
-            definition=sfn.Chain.start(size_bucket_structure_choice),
+            state_machine_name="data-platform-orchestration-state-machine",
+            definition_body=sfn.DefinitionBody.from_chainable(size_bucket_structure_choice),
             logs=sfn.LogOptions(
-                destination=logs.LogGroup(self, "StateMachineLogs"),
+                destination=logs.LogGroup(self, "StateMachineLogs", retention=logs.RetentionDays.ONE_WEEK),
                 level=sfn.LogLevel.ALL
             ),
             tracing_enabled=True #enable x-ray tracing

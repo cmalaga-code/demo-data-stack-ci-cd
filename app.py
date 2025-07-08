@@ -50,19 +50,19 @@ if __name__ == "__main__":
     # data lake stack
 
     if bucket_exists(os.environ.get("STAGE_BUCKET")):
-        stage_bucket = s3.Bucket.from_bucket_name(app, "stage-bucket", os.environ.get("STAGE_BUCKET"))
+        stage_bucket_stack = s3.Bucket.from_bucket_name(app, "stage-bucket", os.environ.get("STAGE_BUCKET"))
     else:
-        stage_bucket = S3BucketStack(app, "stage-bucket", bucket_name=os.environ.get("STAGE_BUCKET"), env_name=os.environ.get("ENV"))
+        stage_bucket_stack = S3BucketStack(app, "stage-bucket", bucket_name=os.environ.get("STAGE_BUCKET"), env_name=os.environ.get("ENV"))
 
     if bucket_exists(os.environ.get("CURATED_BUCKET")):
-        curated_bucket = s3.Bucket.from_bucket_name(app, "curated-bucket", os.environ.get("CURATED_BUCKET"))
+        curated_bucket_stack = s3.Bucket.from_bucket_name(app, "curated-bucket", os.environ.get("CURATED_BUCKET"))
     else:
-        curated_bucket = S3BucketStack(app, "curated-bucket", bucket_name=os.environ.get("CURATED_BUCKET"), env_name=os.environ.get("ENV"))
+        curated_bucket_stack = S3BucketStack(app, "curated-bucket", bucket_name=os.environ.get("CURATED_BUCKET"), env_name=os.environ.get("ENV"))
 
     if bucket_exists(os.environ.get("APPLICATION_BUCKET")):
-        curated_bucket = s3.Bucket.from_bucket_name(app, "application-bucket", os.environ.get("APPLICATION_BUCKET"))
+        curated_bucket_stack = s3.Bucket.from_bucket_name(app, "application-bucket", os.environ.get("APPLICATION_BUCKET"))
     else:
-        application_bucket = S3BucketStack(app, "application-bucket", bucket_name=os.environ.get("APPLICATION_BUCKET"), env_name=os.environ.get("ENV"))
+        application_bucket_stack = S3BucketStack(app, "application-bucket", bucket_name=os.environ.get("APPLICATION_BUCKET"), env_name=os.environ.get("ENV"))
 
     # lambda and glue stack
 
@@ -98,32 +98,31 @@ if __name__ == "__main__":
     meta_lambda_stack = MetaLambdaStack(app, "meta-lambda-stack", orchestration_stack)
     
     # event notification stage -> curated
-
-    stage_bucket.add_event_notification(
+    stage_bucket_stack.bucket.add_event_notification(
         s3.EventType.OBJECT_CREATED_PUT,
         s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
         s3.NotificationKeyFilter(prefix="claims/type=structured/", suffix=".csv")
     )
 
-    stage_bucket.add_event_notification(
+    stage_bucket_stack.bucket.add_event_notification(
         s3.EventType.OBJECT_CREATED_PUT,
         s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
         s3.NotificationKeyFilter(prefix="patient/type=structured/", suffix=".csv")
     )
 
-    stage_bucket.add_event_notification(
+    stage_bucket_stack.bucket.add_event_notification(
         s3.EventType.OBJECT_CREATED_PUT,
         s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
         s3.NotificationKeyFilter(prefix="provider/type=structured/", suffix=".csv")
     )
 
-    stage_bucket.add_event_notification(
+    stage_bucket_stack.bucket.add_event_notification(
         s3.EventType.OBJECT_CREATED_PUT,
         s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
         s3.NotificationKeyFilter(prefix="lab/type=semi-structured/", suffix=".json")
     )
 
-    stage_bucket.add_event_notification(
+    stage_bucket_stack.bucket.add_event_notification(
         s3.EventType.OBJECT_CREATED_PUT,
         s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
         s3.NotificationKeyFilter(prefix="lab/type=unstructured/", suffix=".jpeg")
@@ -131,31 +130,31 @@ if __name__ == "__main__":
 
     # event notification curated (clean) -> application (model data)
 
-    curated_bucket.add_event_notification(
+    curated_bucket_stack.bucket.add_event_notification(
         s3.EventType.OBJECT_CREATED_PUT,
         s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
         s3.NotificationKeyFilter(prefix="claims/type=structured/", suffix=".parquet")
     )
 
-    curated_bucket.add_event_notification(
+    curated_bucket_stack.bucket.add_event_notification(
         s3.EventType.OBJECT_CREATED_PUT,
         s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
         s3.NotificationKeyFilter(prefix="patient/type=structured/", suffix=".parquet")
     )
 
-    curated_bucket.add_event_notification(
+    curated_bucket_stack.bucket.add_event_notification(
         s3.EventType.OBJECT_CREATED_PUT,
         s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
         s3.NotificationKeyFilter(prefix="provider/type=structured/", suffix=".parquet")
     )
 
-    curated_bucket.add_event_notification(
+    curated_bucket_stack.bucket.add_event_notification(
         s3.EventType.OBJECT_CREATED_PUT,
         s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
         s3.NotificationKeyFilter(prefix="lab/type=structured/", suffix=".parquet")
     )
 
-    curated_bucket.add_event_notification(
+    curated_bucket_stack.bucket.add_event_notification(
         s3.EventType.OBJECT_CREATED_PUT,
         s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
         s3.NotificationKeyFilter(prefix="lab/type=unstructured/", suffix=".jpeg")

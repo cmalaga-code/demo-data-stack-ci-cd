@@ -14,7 +14,7 @@ class S3BucketStack(Stack):
 
         is_dev = str(env_name).upper() == "DEV"
 
-        bucket = s3.Bucket(
+        self.bucket = s3.Bucket(
             self, id,
             bucket_name=bucket_name,  # must be globally unique
             versioned=True,
@@ -25,7 +25,7 @@ class S3BucketStack(Stack):
         content_type_enforce_policy = iam.PolicyStatement(
             effect=iam.Effect.DENY,
             actions=["s3:PutObject"],
-            resources=[bucket.arn_for_objects("*")],
+            resources=[self.bucket.arn_for_objects("*")],
             conditions={
                 "Null": {
                     "s3:ContentType": "true"
@@ -33,7 +33,7 @@ class S3BucketStack(Stack):
             },
             principals=[iam.AnyPrincipal()]
         )
-        bucket.add_to_resource_policy(content_type_enforce_policy)
+        self.bucket.add_to_resource_policy(content_type_enforce_policy)
         # Add tags to the stack
         Tags.of(self).add("Environment", env_name)
         Tags.of(self).add("Project", "DataLake")
