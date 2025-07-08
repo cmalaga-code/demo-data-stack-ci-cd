@@ -33,47 +33,47 @@ class OrchestrationStack(Stack):
 
         # lambda tasks defined
         structured_curated_lambda_fn_task = tasks.LambdaInvoke(
-            self, "Process structured data and PUT in curated bucket",
+            self, "job-structured-curated-lambda-task",
             lambda_function=structured_curated_lambda_fn,
             output_path="$.Payload"
         ).add_catch(
-            sfn.Fail(self, "lambda_curated_structured_task_failed", error="lambda_curated_structured_task_error", cause="Failed")
+            sfn.Fail(self, "job-structured-curated-lambda-task-failed", error="job-structured-curated-lambda-task-error", cause="failed")
         )
 
         structured_application_lambda_fn_task = tasks.LambdaInvoke(
-            self, "Process structured data and PUT in application bucket",
+            self, "job-structured-application-lambda-task",
             lambda_function=structured_application_lambda_fn,
             output_path="$.Payload"
         ).add_catch(
-            sfn.Fail(self, "lambda_application_structured_task_failed", error="lambda_application_structured_task_error", cause="Failed")
+            sfn.Fail(self, "job-structured-application-lambda-task-failed", error="job-structured-application-lambda-task-error", cause="failed")
         )
 
         semi_structured_curated_lambda_fn_task = tasks.LambdaInvoke(
-            self, "Process semi structured data and PUT in curated bucket",
+            self, "job-semi-structured-curated-lambda-task",
             lambda_function=semi_structured_curated_lambda_fn,
             output_path="$.Payload"
         ).add_catch(
-            sfn.Fail(self, "lambda_curated_semi_structured_task_failed", error="lambda_curated_semi_structured_task_error", cause="Failed")
+            sfn.Fail(self, "lambda_curated_semi_structured_task_failed", error="lambda_curated_semi_structured_task_error", cause="failed")
         )
 
         unstructured_curated_lambda_fn_task = tasks.LambdaInvoke(
-            self, "Process unstructured data and PUT in curated bucket",
+            self, "job-unstructured-curated-lambda-task",
             lambda_function=unstructured_curated_lambda_fn,
             output_path="$.Payload"
         ).add_catch(
-            sfn.Fail(self, "lambda_curated_unstructured_task_failed", error="lambda_curated_unstructured_task_error", cause="Failed")
+            sfn.Fail(self, "job-semi-structured-curated-lambda-task-failed", error="job-semi-structured-curated-lambda-task-error", cause="failed")
         )
 
         unstructured_application_lambda_fn_task = tasks.LambdaInvoke(
-            self, "Process unstructured data and PUT in application bucket",
+            self, "job-unstructured-application-lambda-task",
             lambda_function=unstructured_application_lambda_fn,
             output_path="$.Payload"
         ).add_catch(
-            sfn.Fail(self, "lambda_application_unstructured_task_failed", error="lambda_application_unstructured_task_error", cause="Failed")
+            sfn.Fail(self, "job-unstructured-application-lambda-task-failed", error="job-unstructured-application-lambda-task-error", cause="failed")
         )
         # define glue task
         structured_curated_glue_task = tasks.GlueStartJobRun(
-            self, "Process structured big data",
+            self, "job-structured-curated-glue-task",
             glue_job_name=structured_curated_glue_name,
             arguments=sfn.TaskInput.from_object({
                 "--JOB_NAME" : structured_curated_glue_name,
@@ -85,11 +85,11 @@ class OrchestrationStack(Stack):
             integration_pattern=sfn.IntegrationPattern.RUN_JOB,  # .sync waits for job to complete
             result_path="$.glue_result"
         ).add_catch(
-            sfn.Fail(self, "structured_curated_glue_task_failed", error="structured_curated_glue_task_error", cause="Failed")
+            sfn.Fail(self, "structured-curated-glue-task-failed", error="structured-curated-glue-task-error", cause="failed")
         )
 
         structured_application_glue_task = tasks.GlueStartJobRun(
-            self, "Process structured big data",
+            self, "job-structured-application-glue-task",
             glue_job_name=structured_application_glue_name,
             arguments=sfn.TaskInput.from_object({
                 "--JOB_NAME" : structured_application_glue_name,
@@ -101,11 +101,11 @@ class OrchestrationStack(Stack):
             integration_pattern=sfn.IntegrationPattern.RUN_JOB,  # .sync waits for job to complete
             result_path="$.glue_result"
         ).add_catch(
-            sfn.Fail(self, "structured_application_glue_task_failed", error="structured_application_glue_task_error", cause="Failed")
+            sfn.Fail(self, "job-structured-application-glue-task-failed", error="job-structured-application-glue-task-error", cause="failed")
         )
 
         semi_structured_curated_glue_task = tasks.GlueStartJobRun(
-            self, "Process semi structured big data",
+            self, "job-semi-structured-curated-glue-task",
             glue_job_name=semi_structured_curated_glue_name,
             arguments=sfn.TaskInput.from_object({
                 "--JOB_NAME" : semi_structured_curated_glue_name,
@@ -117,11 +117,11 @@ class OrchestrationStack(Stack):
             integration_pattern=sfn.IntegrationPattern.RUN_JOB,  # .sync waits for job to complete
             result_path="$.glue_result"
         ).add_catch(
-            sfn.Fail(self, "semi_structured_application_glue_task_failed", error="semi_structured_application_glue_task_error", cause="Failed")
+            sfn.Fail(self, "job-semi-structured-curated-glue-task-failed", error="job-semi-structured-curated-glue-task-error", cause="failed")
         )
 
-        unstructured_curated_glue_stack_task = tasks.GlueStartJobRun(
-            self, "Process unstructured big data",
+        unstructured_curated_glue_task = tasks.GlueStartJobRun(
+            self, "job-unstructured-curated-glue-task",
             glue_job_name=unstructured_curated_glue_stack_name,
             arguments=sfn.TaskInput.from_object({
                 "--JOB_NAME" : unstructured_curated_glue_stack_name,
@@ -133,11 +133,11 @@ class OrchestrationStack(Stack):
             integration_pattern=sfn.IntegrationPattern.RUN_JOB,  # .sync waits for job to complete
             result_path="$.glue_result"
         ).add_catch(
-            sfn.Fail(self, "unstructured_curated_glue_task_failed", error="unstructured_curated_glue_task_error", cause="Failed")
+            sfn.Fail(self, "job-unstructured-curated-glue-task-failed", error="job-unstructured-curated-glue-task-error", cause="failed")
         )
 
-        unstructured_application_glue_stack_task = tasks.GlueStartJobRun(
-            self, "Process unstructured big data",
+        unstructured_application_glue_task = tasks.GlueStartJobRun(
+            self, "job-unstructured-application-glue-task",
             glue_job_name=unstructured_application_glue_stack_name,
             arguments=sfn.TaskInput.from_object({
                 "--JOB_NAME" : unstructured_application_glue_stack_name,
@@ -149,7 +149,7 @@ class OrchestrationStack(Stack):
             integration_pattern=sfn.IntegrationPattern.RUN_JOB,  # .sync waits for job to complete
             result_path="$.glue_result"
         ).add_catch(
-            sfn.Fail(self, "unstructured_application_glue_task_failed", error="unstructured_application_glue_task_error", cause="Failed")
+            sfn.Fail(self, "job-unstructured-application-glue-task-failed", error="job-unstructured-application-glue-task-error", cause="failed")
         )
         
         # define choice per size
@@ -210,7 +210,7 @@ class OrchestrationStack(Stack):
                 Condition.string_matches("$.bucketNameLower", "*stage*"),
                 Condition.string_matches("$.objectKey", "*type=unstructured*")
             ),
-            unstructured_curated_glue_stack_task.next(success)
+            unstructured_curated_glue_task.next(success)
         ).when(
             Condition.and_(
                 Condition.number_less_than("$.fileSize", SIZE_THRESHOLD),
@@ -224,7 +224,7 @@ class OrchestrationStack(Stack):
                 Condition.string_matches("$.bucketNameLower", "*curated*"),
                 Condition.string_matches("$.objectKey", "*type=unstructured*")
             ),
-            unstructured_application_glue_stack_task.next(success)
+            unstructured_application_glue_task.next(success)
         ).otherwise(success)
 
 
