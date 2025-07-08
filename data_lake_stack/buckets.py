@@ -6,7 +6,11 @@ from aws_cdk import (
 )
 from constructs import Construct
 
-
+class ImportedBucketStack(Stack):
+    def __init__(self, scope: Construct, id: str, bucket_name: str, **kwargs):
+        super().__init__(scope, id, **kwargs)
+        logical_id = f"imported-bucket-{bucket_name}"
+        self.bucket = s3.Bucket.from_bucket_name(self, logical_id, bucket_name)
 
 class S3BucketStack(Stack):
     def __init__(self, scope: Construct, id: str, bucket_name: str, env_name: str, **kwargs):

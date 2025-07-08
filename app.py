@@ -3,7 +3,7 @@ import boto3
 from aws_cdk import App, aws_s3 as s3, aws_s3_notifications as s3n
 from botocore.exceptions import ClientError
 
-from data_lake_stack.buckets import S3BucketStack
+from data_lake_stack.buckets import S3BucketStack, ImportedBucketStack
 from orchestration_stack.step_function_construct import OrchestrationStack
 from compute_stack.lambda_stack.lambda_construct import (
     StructuredCurateDataLambdaStack,
@@ -45,20 +45,26 @@ if __name__ == "__main__":
 
     # data lake stack
 
-    if bucket_exists(os.environ.get("STAGE_BUCKET")):
-        stage_bucket_stack = s3.Bucket.from_bucket_name(app, "stage-bucket", os.environ.get("STAGE_BUCKET"))
-    else:
-        stage_bucket_stack = S3BucketStack(app, "stage-bucket", bucket_name=os.environ.get("STAGE_BUCKET"), env_name=os.environ.get("ENV"))
+    stage_bucket_name = os.environ.get("STAGE_BUCKET")
+    curated_bucket_name = os.environ.get("CURATED_BUCKET")
+    application_bucket_name = os.environ.get("APPLICATION_BUCKET")
+    deployment_env = os.environ.get("ENV")
 
-    if bucket_exists(os.environ.get("CURATED_BUCKET")):
-        curated_bucket_stack = s3.Bucket.from_bucket_name(app, "curated-bucket", os.environ.get("CURATED_BUCKET"))
-    else:
-        curated_bucket_stack = S3BucketStack(app, "curated-bucket", bucket_name=os.environ.get("CURATED_BUCKET"), env_name=os.environ.get("ENV"))
 
-    if bucket_exists(os.environ.get("APPLICATION_BUCKET")):
-        curated_bucket_stack = s3.Bucket.from_bucket_name(app, "application-bucket", os.environ.get("APPLICATION_BUCKET"))
+    if bucket_exists(stage_bucket_name):
+        stage_bucket_stack = ImportedBucketStack(app, "imported-stage-bucket", bucket_name=stage_bucket_name)
     else:
-        application_bucket_stack = S3BucketStack(app, "application-bucket", bucket_name=os.environ.get("APPLICATION_BUCKET"), env_name=os.environ.get("ENV"))
+        stage_bucket_stack = S3BucketStack(app, "stage-bucket", bucket_name=stage_bucket_name, env_name=deployment_env)
+
+    if bucket_exists(curated_bucket_name):
+        curated_bucket_stack = ImportedBucketStack(app, "imported-curated-bucket", bucket_name=curated_bucket_name)
+    else:
+        curated_bucket_stack = S3BucketStack(app, "curated-bucket", bucket_name=curated_bucket_name, env_name=deployment_env)
+
+    if bucket_exists(application_bucket_name):
+        application_bucket_stack = ImportedBucketStack(app, "imported-application-bucket", bucket_name=application_bucket_name)
+    else:
+        application_bucket_stack = S3BucketStack(app, "application-bucket", bucket_name=application_bucket_name, env_name=deployment_env)
 
     # lambda and glue stack
 
