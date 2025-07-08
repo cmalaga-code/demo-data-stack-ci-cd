@@ -66,7 +66,7 @@ jobs:
       - name: Deploy data warehouse galaxy model
         run: |
           snow connection set-default my_snowflake
-          for file in $(ls sql/data_warehouse_data_model/*.sql | sort); do
+          for file in $(ls data_warehouse_stack/data_warehouse_data_model/*.sql | sort); do
             echo "Running $file..."
             snow sql -f "$file"
           done 
@@ -74,7 +74,7 @@ jobs:
       - name: Deploy data mart(s)
         run: |
           snow connection set-default my_snowflake
-          for file in $(ls sql/data_mart/*.sql | sort); do
+          for file in $(ls data_warehouse_stack/data_mart/*.sql | sort); do
             echo "Running $file..."
             snow sql -f "$file"
           done 
@@ -82,7 +82,7 @@ jobs:
       - name: Deploy roles
         run: |
           snow connection set-default my_snowflake
-          for file in $(ls sql/role_permissions/*.sql | sort); do
+          for file in $(ls data_warehouse_stack/role_permissions/*.sql | sort); do
             echo "Running $file..."
             snow sql -f "$file"
           done 
