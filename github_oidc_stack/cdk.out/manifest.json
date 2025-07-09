@@ -1,28 +1,28 @@
 {
   "version": "44.0.0",
   "artifacts": {
-    "gitHub-oidc-stack.assets": {
+    "gitHub-oidc-stackv2.assets": {
       "type": "cdk:asset-manifest",
       "properties": {
-        "file": "gitHub-oidc-stack.assets.json",
+        "file": "gitHub-oidc-stackv2.assets.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
       }
     },
-    "gitHub-oidc-stack": {
+    "gitHub-oidc-stackv2": {
       "type": "aws:cloudformation:stack",
       "environment": "aws://unknown-account/unknown-region",
       "properties": {
-        "templateFile": "gitHub-oidc-stack.template.json",
+        "templateFile": "gitHub-oidc-stackv2.template.json",
         "terminationProtection": false,
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-${AWS::Region}",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-${AWS::Region}",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/8ddc066879e0bf27d14763f41c3b293179ca0ddd62660e829b81aa6842976056.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/b287393b2f4750037a490063172cded9e1e98b1f2460ff40e8c65bddd3b2ad90.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
-          "gitHub-oidc-stack.assets"
+          "gitHub-oidc-stackv2.assets"
         ],
         "lookupRole": {
           "arn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-lookup-role-${AWS::AccountId}-${AWS::Region}",
@@ -31,77 +31,77 @@
         }
       },
       "dependencies": [
-        "gitHub-oidc-stack.assets"
+        "gitHub-oidc-stackv2.assets"
       ],
       "metadata": {
-        "/gitHub-oidc-stack/gitHub-oidc-stack/Resource/Default": [
+        "/gitHub-oidc-stackv2/gitHub-oidc-stackv2/Resource/Default": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "gitHuboidcstack6D14D8C0"
+            "data": "gitHuboidcstackv21C922387"
           }
         ],
-        "/gitHub-oidc-stack/LatestNodeRuntimeMap": [
+        "/gitHub-oidc-stackv2/LatestNodeRuntimeMap": [
           {
             "type": "aws:cdk:logicalId",
             "data": "LatestNodeRuntimeMap"
           }
         ],
-        "/gitHub-oidc-stack/Custom::AWSCDKOpenIdConnectProviderCustomResourceProvider": [
+        "/gitHub-oidc-stackv2/Custom::AWSCDKOpenIdConnectProviderCustomResourceProvider": [
           {
             "type": "aws:cdk:is-custom-resource-handler-customResourceProvider",
             "data": true
           }
         ],
-        "/gitHub-oidc-stack/Custom::AWSCDKOpenIdConnectProviderCustomResourceProvider/Role": [
+        "/gitHub-oidc-stackv2/Custom::AWSCDKOpenIdConnectProviderCustomResourceProvider/Role": [
           {
             "type": "aws:cdk:logicalId",
             "data": "CustomAWSCDKOpenIdConnectProviderCustomResourceProviderRole517FED65"
           }
         ],
-        "/gitHub-oidc-stack/Custom::AWSCDKOpenIdConnectProviderCustomResourceProvider/Handler": [
+        "/gitHub-oidc-stackv2/Custom::AWSCDKOpenIdConnectProviderCustomResourceProvider/Handler": [
           {
             "type": "aws:cdk:logicalId",
             "data": "CustomAWSCDKOpenIdConnectProviderCustomResourceProviderHandlerF2C543E0"
           }
         ],
-        "/gitHub-oidc-stack/github-action-role/Resource": [
+        "/gitHub-oidc-stackv2/github-action-role/Resource": [
           {
             "type": "aws:cdk:logicalId",
             "data": "githubactionrole8876F5CB"
           }
         ],
-        "/gitHub-oidc-stack/github-action-role/DefaultPolicy/Resource": [
+        "/gitHub-oidc-stackv2/github-action-role/DefaultPolicy/Resource": [
           {
             "type": "aws:cdk:logicalId",
             "data": "githubactionroleDefaultPolicy61B8DC47"
           }
         ],
-        "/gitHub-oidc-stack/CDKMetadata/Default": [
+        "/gitHub-oidc-stackv2/CDKMetadata/Default": [
           {
             "type": "aws:cdk:logicalId",
             "data": "CDKMetadata"
           }
         ],
-        "/gitHub-oidc-stack/CDKMetadata/Condition": [
+        "/gitHub-oidc-stackv2/CDKMetadata/Condition": [
           {
             "type": "aws:cdk:logicalId",
             "data": "CDKMetadataAvailable"
           }
         ],
-        "/gitHub-oidc-stack/BootstrapVersion": [
+        "/gitHub-oidc-stackv2/BootstrapVersion": [
           {
             "type": "aws:cdk:logicalId",
             "data": "BootstrapVersion"
           }
         ],
-        "/gitHub-oidc-stack/CheckBootstrapVersion": [
+        "/gitHub-oidc-stackv2/CheckBootstrapVersion": [
           {
             "type": "aws:cdk:logicalId",
             "data": "CheckBootstrapVersion"
           }
         ]
       },
-      "displayName": "gitHub-oidc-stack"
+      "displayName": "gitHub-oidc-stackv2"
     },
     "Tree": {
       "type": "cdk:tree",

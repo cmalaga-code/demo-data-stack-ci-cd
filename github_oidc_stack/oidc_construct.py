@@ -66,5 +66,5 @@ class GitHubOIDCStack(Stack):
 if __name__== "__main__":
     app = App()
     # OIDC Authentication For Temp Credentials (Temp Obtain access to Role) -- this is for the docker container and only execute once
-    GitHubOIDCStack(app, "gitHub-oidc-stack")
+    GitHubOIDCStack(app, "gitHub-oidc-stackv2")
     app.synth()

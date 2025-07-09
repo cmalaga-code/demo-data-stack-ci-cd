@@ -5,7 +5,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 import logging
 import io
-import os
+import os 
 
 s3 = boto3.client('s3')
 logger = logging.getLogger()
