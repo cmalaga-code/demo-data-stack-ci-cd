@@ -88,7 +88,12 @@ if __name__ == "__main__":
     deployment_env = os.environ.get("ENV")
 
     if bucket_exists(stage_bucket_name):
-        stage_bucket_stack = ImportedBucketStack(app, "imported-stage-bucket", bucket_name=stage_bucket_name)
+        stage_bucket_stack = ImportedBucketStack(
+            app, "imported-stage-bucket", bucket_name=stage_bucket_name,
+            event_lambda_fn=meta_lambda_stack.meta_lambda, 
+            event_prefix="claims/type=structured/", event_suffix=".csv"
+        )
+        stage_bucket_stack.add_dependency(meta_lambda_stack)
     else:
         stage_bucket_stack = S3BucketStack(
             app, "stage-bucket", bucket_name=stage_bucket_name, 
@@ -98,7 +103,12 @@ if __name__ == "__main__":
         stage_bucket_stack.add_dependency(meta_lambda_stack)
 
     if bucket_exists(curated_bucket_name):
-        curated_bucket_stack = ImportedBucketStack(app, "imported-curated-bucket", bucket_name=curated_bucket_name)
+        curated_bucket_stack = ImportedBucketStack(
+            app, "imported-curated-bucket", bucket_name=curated_bucket_name,
+            event_lambda_fn=meta_lambda_stack.meta_lambda, 
+            event_prefix="claims/type=structured/", event_suffix=".parquet"
+        )
+        curated_bucket_stack.add_dependency(meta_lambda_stack)
     else:
         curated_bucket_stack = S3BucketStack(
             app, "curated-bucket", bucket_name=curated_bucket_name, 
@@ -108,7 +118,12 @@ if __name__ == "__main__":
         curated_bucket_stack.add_dependency(meta_lambda_stack)
 
     if bucket_exists(application_bucket_name):
-        application_bucket_stack = ImportedBucketStack(app, "imported-application-bucket", bucket_name=application_bucket_name)
+        application_bucket_stack = ImportedBucketStack(
+            app, "imported-application-bucket", bucket_name=application_bucket_name,
+            event_lambda_fn=meta_lambda_stack.meta_lambda, 
+            event_prefix="claims/model/fact", event_suffix=".parquet"
+        )
+        application_bucket_stack.add_dependency(meta_lambda_stack)
     else:
         application_bucket_stack = S3BucketStack(
             app, "application-bucket", bucket_name=application_bucket_name, 
