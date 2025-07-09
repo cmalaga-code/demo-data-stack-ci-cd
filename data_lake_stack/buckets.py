@@ -1,8 +1,7 @@
 from aws_cdk import (
     Stack, Tags,
     RemovalPolicy,
-    aws_s3 as s3,
-    aws_iam as iam
+    aws_s3 as s3
 )
 from constructs import Construct
 

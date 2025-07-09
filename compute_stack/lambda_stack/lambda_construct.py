@@ -297,9 +297,9 @@ class SnowflakeModelLambdaStack(Stack):
                 "SNOWFLAKE_ACCOUNT": os.environ["SNOWFLAKE_ACCOUNT"],
                 "SNOWFLAKE_USER": os.environ["SNOWFLAKE_USER"],
                 "SNOWFLAKE_ROLE": os.environ["SNOWFLAKE_ROLE"],
-                "SNOWFLAKE_PIPE": {
-                    "FACT_CLAIMS": json.dumps(os.environ["SNOWFLAKE_PIPE_FACT_CLAIMS"])
-                },
+                "SNOWFLAKE_PIPE": json.dumps({
+                    "FACT_CLAIMS": os.environ["SNOWFLAKE_PIPE_FACT_CLAIMS"]
+                }),
                 "SNOWFLAKE_PRIVATE_KEY": os.environ["SNOWFLAKE_PRIVATE_KEY"],  # base64-encoded
             },
             role=lambda_role
