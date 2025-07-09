@@ -20,6 +20,9 @@ jobs:
       SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
       SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
       ACTIONS_OIDC_ROLE_ARN: ${{ secrets.ACTIONS_ROLE_ARN }}
+      PROD_ACCOUNT_ID: ${{ secrets.PROD_ACCOUNT_ID }}
+      STAGE_ACCOUNT_ID: ${{ secrets.STAGE_ACCOUNT_ID }}
+      DEV_ACCOUNT_ID: ${{ secrets.DEV_ACCOUNT_ID }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -33,21 +36,21 @@ jobs:
           if [[ BRANCH_NAME == "main" ]]; then
             echo "ENV=PROD" >> $GITHUB_ENV
             echo "REPO_NAME=${{ github.repository }}" >> $GITHUB_ENV
-            echo "STAGE_BUCKET=stage-datalake-us-east-1-${{ secrets.PROD_ACCOUNT_ID }}" >> $GITHUB_ENV
-            echo "CURATED_BUCKET=curated-datalake-us-east-1-${{ secrets.PROD_ACCOUNT_ID }}" >> $GITHUB_ENV
-            echo "APPLICATION_BUCKET=application-datalake-us-east-1-${{ secrets.PROD_ACCOUNT_ID }}" >> $GITHUB_ENV
+            echo "STAGE_BUCKET=stage-datalake-us-east-1-${ env.PROD_ACCOUNT_ID }" >> $GITHUB_ENV
+            echo "CURATED_BUCKET=curated-datalake-us-east-1-${ env.PROD_ACCOUNT_ID }" >> $GITHUB_ENV
+            echo "APPLICATION_BUCKET=application-datalake-us-east-1-${ env.PROD_ACCOUNT_ID }" >> $GITHUB_ENV
           elif [[ BRANCH_NAME == "stage" ]]; then
             echo "ENV=STAGE" >> $GITHUB_ENV
             echo "REPO_NAME=${{ github.repository }}" >> $GITHUB_ENV
-            echo "STAGE_BUCKET=stage-datalake-us-east-1-${{ secrets.STAGE_ACCOUNT_ID }}" >> $GITHUB_ENV
-            echo "CURATED_BUCKET=curated-datalake-us-east-1-${{ secrets.STAGE_ACCOUNT_ID }}" >> $GITHUB_ENV
-            echo "APPLICATION_BUCKET=application-datalake-us-east-1-${{ secrets.STAGE_ACCOUNT_ID }}" >> $GITHUB_ENV
+            echo "STAGE_BUCKET=stage-datalake-us-east-1-${ env.STAGE_ACCOUNT_ID }" >> $GITHUB_ENV
+            echo "CURATED_BUCKET=curated-datalake-us-east-1-${ env.STAGE_ACCOUNT_ID }" >> $GITHUB_ENV
+            echo "APPLICATION_BUCKET=application-datalake-us-east-1-${ env.STAGE_ACCOUNT_ID }" >> $GITHUB_ENV
           else
             echo "ENV=DEV" >> $GITHUB_ENV
             echo "REPO_NAME=${{ github.repository }}" >> $GITHUB_ENV
-            echo "STAGE_BUCKET=stage-datalake-us-east-1-${{ secrets.DEV_ACCOUNT_ID }}" >> $GITHUB_ENV
-            echo "CURATED_BUCKET=curated-datalake-us-east-1-${{ secrets.DEV_ACCOUNT_ID }}" >> $GITHUB_ENV
-            echo "APPLICATION_BUCKET=application-datalake-us-east-1-${{ secrets.DEV_ACCOUNT_ID }}" >> $GITHUB_ENV
+            echo "STAGE_BUCKET=stage-datalake-us-east-1-${ env.DEV_ACCOUNT_ID }" >> $GITHUB_ENV
+            echo "CURATED_BUCKET=curated-datalake-us-east-1-${ env.DEV_ACCOUNT_ID }" >> $GITHUB_ENV
+            echo "APPLICATION_BUCKET=application-datalake-us-east-1-${ env.DEV_ACCOUNT_ID }" >> $GITHUB_ENV
           fi
 
       - name: Configure AWS credentials

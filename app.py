@@ -21,7 +21,6 @@ from compute_stack.glue_stack.glue_construct import (
     UnStructuredCurateDataGlueStack,
     UnStructuredApplicationDataGlueStack
 )
-from github_oidc_stack.oidc_construct import GitHubOIDCStack
 
 def bucket_exists(bucket_name: str) -> bool:
     s3_client = boto3.client("s3")
@@ -44,9 +43,6 @@ if __name__ == "__main__":
     missing = [var for var in required_vars if not os.environ.get(var)]
     if missing:
         raise ValueError(f"Missing required environment variables: {', '.join(missing)}")
-    
-    oidc = GitHubOIDCStack(app, "gitHub-oidc-stack")
-
 
     # data lake stack
 
