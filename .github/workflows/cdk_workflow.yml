@@ -35,19 +35,19 @@ jobs:
           echo "SNOWFLAKE_PIPE_FACT_CLAIMS=${BRANCH_NAME}_MODEL_CLAIMS_FACT_PIPE" >> $GITHUB_ENV
           if [[ $BRANCH_NAME == "main" ]]; then
             echo "ENV=PROD" >> $GITHUB_ENV
-            echo "STAGE_BUCKET=\"stage-datalake-us-east-1-$PROD_ACCOUNT_ID\"" >> $GITHUB_ENV
-            echo "CURATED_BUCKET=\"curated-datalake-us-east-1-$PROD_ACCOUNT_ID\"" >> $GITHUB_ENV
-            echo "APPLICATION_BUCKET=\"application-datalake-us-east-1-$PROD_ACCOUNT_ID\"" >> $GITHUB_ENV
+            echo "STAGE_BUCKET=stage-datalake-us-east-1-$PROD_ACCOUNT_ID" >> $GITHUB_ENV
+            echo "CURATED_BUCKET=curated-datalake-us-east-1-$PROD_ACCOUNT_ID" >> $GITHUB_ENV
+            echo "APPLICATION_BUCKET=application-datalake-us-east-1-$PROD_ACCOUNT_ID" >> $GITHUB_ENV
           elif [[ $BRANCH_NAME == "stage" ]]; then
             echo "ENV=STAGE" >> $GITHUB_ENV
-            echo "STAGE_BUCKET=\"stage-datalake-us-east-1-$STAGE_ACCOUNT_ID\"" >> $GITHUB_ENV
-            echo "CURATED_BUCKET=\"curated-datalake-us-east-1-$STAGE_ACCOUNT_ID\"" >> $GITHUB_ENV
-            echo "APPLICATION_BUCKET=\"application-datalake-us-east-1-$STAGE_ACCOUNT_ID\"" >> $GITHUB_ENV
+            echo "STAGE_BUCKET=stage-datalake-us-east-1-$STAGE_ACCOUNT_ID" >> $GITHUB_ENV
+            echo "CURATED_BUCKET=curated-datalake-us-east-1-$STAGE_ACCOUNT_ID" >> $GITHUB_ENV
+            echo "APPLICATION_BUCKET=application-datalake-us-east-1-$STAGE_ACCOUNT_ID" >> $GITHUB_ENV
           else
             echo "ENV=DEV" >> $GITHUB_ENV
-            echo "STAGE_BUCKET=\"stage-datalake-us-east-1-$DEV_ACCOUNT_ID\"" >> $GITHUB_ENV
-            echo "CURATED_BUCKET=\"curated-datalake-us-east-1-$DEV_ACCOUNT_ID\"" >> $GITHUB_ENV
-            echo "APPLICATION_BUCKET=\"application-datalake-us-east-1-$DEV_ACCOUNT_ID\"" >> $GITHUB_ENV
+            echo "STAGE_BUCKET=stage-datalake-us-east-1-$DEV_ACCOUNT_ID" >> $GITHUB_ENV
+            echo "CURATED_BUCKET=curated-datalake-us-east-1-$DEV_ACCOUNT_ID" >> $GITHUB_ENV
+            echo "APPLICATION_BUCKET=application-datalake-us-east-1-$DEV_ACCOUNT_ID" >> $GITHUB_ENV
           fi
 
       - name: Configure AWS credentials
