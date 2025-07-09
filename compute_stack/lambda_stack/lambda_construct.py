@@ -27,9 +27,9 @@ class MetaLambdaStack(Stack):
                     "states:StartExecution"
                 ],
                 resources=[
-                    f"arn:aws:s3:::{os.environ.get('STAGE_BUCKET')}/*",
-                    f"arn:aws:s3:::{os.environ.get('CURATED_BUCKET')}/*",
-                    f"arn:aws:s3:::{os.environ.get('APPLICATION_BUCKET')}/*",
+                    f"arn:aws:s3:::{os.environ['STAGE_BUCKET']}/*",
+                    f"arn:aws:s3:::{os.environ['CURATED_BUCKET']}/*",
+                    f"arn:aws:s3:::{os.environ.get['APPLICATION_BUCKET']}/*",
                     orchestration_stack.state_machine.state_machine_arn
                 ]
             )
@@ -38,7 +38,7 @@ class MetaLambdaStack(Stack):
         self.meta_lambda = _lambda.DockerImageFunction(
             self, "meta-lambda-function",
             code=_lambda.DockerImageCode.from_image_asset("src/_lambda_/process_meta_data"),
-            timeout=Duration.seconds(80),
+            timeout=Duration.seconds(180),
             memory_size=2048, # MB -- 2GB
             description="Triggered by S3 to extract metadata and start Step Function",
             environment={
@@ -84,7 +84,7 @@ class StructuredCurateDataLambdaStack(Stack):
         self.fn = _lambda.DockerImageFunction(
             self, "structured-curate-lambda",
             code=_lambda.DockerImageCode.from_image_asset("src/_lambda_/curate_layer/process_structured_data"),
-            timeout=Duration.seconds(80),
+            timeout=Duration.seconds(180),
             memory_size=4096, # MB -- 4GB
             description="State task for state machine .. process structured data that is not big data",
             role=lambda_role
@@ -108,7 +108,7 @@ class StructuredApplicationDataLambdaStack(Stack):
                     "s3:GetObject",
                 ],
                 resources=[
-                    f"arn:aws:s3:::{os.environ.get('CURATED_BUCKET')}/*"
+                    f"arn:aws:s3:::{os.environ['CURATED_BUCKET']}/*"
                 ]
             )
         )
@@ -119,7 +119,7 @@ class StructuredApplicationDataLambdaStack(Stack):
                     "s3:PutObject"
                 ],
                 resources=[
-                    f"arn:aws:s3:::{os.environ.get('APPLICATION_BUCKET')}/*"
+                    f"arn:aws:s3:::{os.environ['APPLICATION_BUCKET']}/*"
                 ]
             )
         )
@@ -127,7 +127,7 @@ class StructuredApplicationDataLambdaStack(Stack):
         self.fn = _lambda.DockerImageFunction(
             self, "structured-application-lambda",
             code=_lambda.DockerImageCode.from_image_asset("src/_lambda_/application_layer/process_structured_data"),
-            timeout=Duration.seconds(80),
+            timeout=Duration.seconds(180),
             memory_size=4096, # MB -- 4GB
             description="State task for state machine .. process structured data that is not big data",
             role=lambda_role
@@ -151,7 +151,7 @@ class SemiStructuredCurateDataLambdaStack(Stack):
                     "s3:GetObject",
                 ],
                 resources=[
-                    f"arn:aws:s3:::{os.environ.get('STAGE_BUCKET')}/*"
+                    f"arn:aws:s3:::{os.environ['STAGE_BUCKET']}/*"
                 ]
             )
         )
@@ -162,7 +162,7 @@ class SemiStructuredCurateDataLambdaStack(Stack):
                     "s3:PutObject"
                 ],
                 resources=[
-                    f"arn:aws:s3:::{os.environ.get('CURATED_BUCKET')}/*"
+                    f"arn:aws:s3:::{os.environ['CURATED_BUCKET']}/*"
                 ]
             )
         )
@@ -170,7 +170,7 @@ class SemiStructuredCurateDataLambdaStack(Stack):
         self.fn = _lambda.DockerImageFunction(
             self, "semi-structured-curate-lambda",
             code=_lambda.DockerImageCode.from_image_asset("src/_lambda_/curate_layer/process_semi_structured_data"),
-            timeout=Duration.seconds(80),
+            timeout=Duration.seconds(180),
             memory_size=4096, # MB -- 4GB
             description="State task for state machine .. process structured data that is not big data",
             role=lambda_role
@@ -195,7 +195,7 @@ class UnStructuredCurateDataLambdaStack(Stack):
                     "s3:GetObject",
                 ],
                 resources=[
-                    f"arn:aws:s3:::{os.environ.get('STAGE_BUCKET')}/*"
+                    f"arn:aws:s3:::{os.environ['STAGE_BUCKET']}/*"
                 ]
             )
         )
@@ -206,7 +206,7 @@ class UnStructuredCurateDataLambdaStack(Stack):
                     "s3:PutObject"
                 ],
                 resources=[
-                    f"arn:aws:s3:::{os.environ.get('CURATED_BUCKET')}/*"
+                    f"arn:aws:s3:::{os.environ['CURATED_BUCKET']}/*"
                 ]
             )
         )
@@ -215,7 +215,7 @@ class UnStructuredCurateDataLambdaStack(Stack):
         self.fn = _lambda.DockerImageFunction(
             self, "unstructured-curate-lambda",
             code=_lambda.DockerImageCode.from_image_asset("src/_lambda_/curate_layer/process_unstructured_data"),
-            timeout=Duration.seconds(80),
+            timeout=Duration.seconds(180),
             memory_size=4096, # MB -- 4GB
             description="State task for state machine .. process unstructured data that is not big data",
             role=lambda_role
@@ -239,7 +239,7 @@ class UnStructuredApplicationDataLambdaStack(Stack):
                     "s3:GetObject",
                 ],
                 resources=[
-                    f"arn:aws:s3:::{os.environ.get('CURATED_BUCKET')}/*"
+                    f"arn:aws:s3:::{os.environ['CURATED_BUCKET']}/*"
                 ]
             )
         )
@@ -250,7 +250,7 @@ class UnStructuredApplicationDataLambdaStack(Stack):
                     "s3:PutObject"
                 ],
                 resources=[
-                    f"arn:aws:s3:::{os.environ.get('APPLICATION_BUCKET')}/*"
+                    f"arn:aws:s3:::{os.environ['APPLICATION_BUCKET']}/*"
                 ]
             )
         )
@@ -258,7 +258,7 @@ class UnStructuredApplicationDataLambdaStack(Stack):
         self.fn = _lambda.DockerImageFunction(
             self, "unstructured-application-lambda",
             code=_lambda.DockerImageCode.from_image_asset("src/_lambda_/application_layer/process_unstructured_data"),
-            timeout=Duration.seconds(80),
+            timeout=Duration.seconds(180),
             memory_size=4096, # MB -- 4GB
             description="State task for state machine .. process unstructured data that is not big data",
             role=lambda_role
@@ -282,7 +282,7 @@ class SnowflakeModelLambdaStack(Stack):
                     "s3:GetObject",
                 ],
                 resources=[
-                    f"arn:aws:s3:::{os.environ.get('APPLICATION_BUCKET')}/*"
+                    f"arn:aws:s3:::{os.environ['APPLICATION_BUCKET']}/*"
                 ]
             )
         )
@@ -290,7 +290,7 @@ class SnowflakeModelLambdaStack(Stack):
         self.fn = _lambda.DockerImageFunction(
             self, "snowflake-lambda-application-lambda",
             code=_lambda.DockerImageCode.from_image_asset("src/_lambda_/ingest_data_model"),
-            timeout=Duration.seconds(80),
+            timeout=Duration.seconds(180),
             memory_size=4096, # MB -- 4GB
             description="State task for state machine .. ingest data to model",
             environment={

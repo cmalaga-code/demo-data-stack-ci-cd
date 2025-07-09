@@ -33,8 +33,8 @@ def lambda_handler(event, context):
         "objectKey": "path/to/file.csv",
         "contentType": "text/csv",
         "fileSize": 123456,
-        "destBucket": "destination-bucket",
-        "destPrefix": "curated/"
+        "destBucket": "N/A",
+        "destPrefix": "N/A"
     }
     """
     try:
