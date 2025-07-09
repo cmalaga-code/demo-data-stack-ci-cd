@@ -5,6 +5,16 @@
 
 ![CDK Deploy](https://github.com/cmalaga-code/demo-data-stack-ci-cd/actions/workflows/snowflake_workflow.yml/badge.svg)
 
+## Dimensional Data Modeling
+
+- Fact tables are representations of events or transactions and are quantitative
+    - Things that happen in the real world
+    - They capture the who, what, when, where, and how much about a specific occurrence.
+- Dim tables describe the event in a qualitative way
+- Bridge ables normalize many to many relationships
+    - Patient - Doctor
+
+
 ## .github/workflows 
 
 - Contains CI/CD automated pipeline
@@ -19,7 +29,7 @@
 - Each service has its own stack
 
 ```bash
-cd synth
+cdk synth
 cdk deploy IngestionStack
 cdk deploy TransformationStack
 ```
@@ -47,13 +57,18 @@ cdk deploy TransformationStack
 - Deploy data model
 - Deploy data mart
 - Deploy role permissions
+- Deploy external stages
+- Deploy snowpipes to ingest data from S3 into data model
 
 ### ./github_oidc_stack/
 
+- Utilizes trusted entity relationship
 - Contains github actions construct
 - Authenticate utilizing temporary credentials by assuming role
 
 ### ./orchestration_stack/
 
-- Contains orchestration construct
+- Contains orchestration constructs
+- State machine
+- How will the data be processed and what will happen
 

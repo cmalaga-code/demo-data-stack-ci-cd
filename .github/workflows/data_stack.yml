@@ -1,4 +1,4 @@
-name: Deploy Snowflake Structures
+name: Deploy Data Stack
 
 on:
   push:
@@ -6,9 +6,78 @@ on:
   pull_request:
     branches: [main, stage]
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
-  deploy:
+  cdk-deploy:
+    name: Deploy Infrastructure via CDK 
     runs-on: ubuntu-latest
+    env:
+      SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+      SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+      SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+      SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
+      ACTIONS_OIDC_ROLE_ARN: ${{ secrets.ACTIONS_ROLE_ARN }}
+      PROD_ACCOUNT_ID: ${{ secrets.PROD_ACCOUNT_ID }}
+      STAGE_ACCOUNT_ID: ${{ secrets.STAGE_ACCOUNT_ID }}
+      DEV_ACCOUNT_ID: ${{ secrets.DEV_ACCOUNT_ID }}
+    steps: 
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set AWS Role ARN based on branch
+        id: set-role
+        run: |
+          BRANCH_NAME="${GITHUB_REF##*/}"
+          echo "SNOWFLAKE_STAGE_FACT_CLAIMS=${BRANCH_NAME}_model_fact_claims_stage" >> $GITHUB_ENV
+          echo "SNOWFLAKE_PIPE_FACT_CLAIMS=${BRANCH_NAME}_MODEL_CLAIMS_FACT_PIPE" >> $GITHUB_ENV
+          if [[ $BRANCH_NAME == "main" ]]; then
+            echo "ENV=PROD" >> $GITHUB_ENV
+            echo "STAGE_BUCKET=stage-datalake-us-east-1-$PROD_ACCOUNT_ID" >> $GITHUB_ENV
+            echo "CURATED_BUCKET=curated-datalake-us-east-1-$PROD_ACCOUNT_ID" >> $GITHUB_ENV
+            echo "APPLICATION_BUCKET=application-datalake-us-east-1-$PROD_ACCOUNT_ID" >> $GITHUB_ENV
+          elif [[ $BRANCH_NAME == "stage" ]]; then
+            echo "ENV=STAGE" >> $GITHUB_ENV
+            echo "STAGE_BUCKET=stage-datalake-us-east-1-$STAGE_ACCOUNT_ID" >> $GITHUB_ENV
+            echo "CURATED_BUCKET=curated-datalake-us-east-1-$STAGE_ACCOUNT_ID" >> $GITHUB_ENV
+            echo "APPLICATION_BUCKET=application-datalake-us-east-1-$STAGE_ACCOUNT_ID" >> $GITHUB_ENV
+          else
+            echo "ENV=DEV" >> $GITHUB_ENV
+            echo "STAGE_BUCKET=stage-datalake-us-east-1-$DEV_ACCOUNT_ID" >> $GITHUB_ENV
+            echo "CURATED_BUCKET=curated-datalake-us-east-1-$DEV_ACCOUNT_ID" >> $GITHUB_ENV
+            echo "APPLICATION_BUCKET=application-datalake-us-east-1-$DEV_ACCOUNT_ID" >> $GITHUB_ENV
+          fi
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.ACTIONS_OIDC_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Install AWS CDK
+        run: npm install -g aws-cdk@2.1020.2
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: CDK Bootstrap
+        run: cdk bootstrap
+
+      - name: CDK Diff
+        run: cdk diff || true  # Prevents failure if there are changes
+      
+      - name: Destroy CDK stack (safe with retained S3)
+        run: cdk destroy --all --force
+
+      - name: CDK Deploy
+        run: cdk deploy --all --require-approval never --ci
+  snowflake-deploy:
+    name: Deploy to Snowflake
+    runs-on: ubuntu-latest
+    needs: cdk-deploy
     env:
       SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
       SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
@@ -103,3 +172,4 @@ jobs:
         run: |
           snow connection set-default my_snowflake
           snow sql -q "CREATE OR REPLACE PIPE ${SNOWFLAKE_PIPE_FACT_CLAIMS} AUTO_INGEST = FALSE AS COPY INTO FACT_CLAIMS FROM @${SNOWFLAKE_STAGE_FACT_CLAIMS} FILE_FORMAT = (TYPE = 'PARQUET') MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE"
+

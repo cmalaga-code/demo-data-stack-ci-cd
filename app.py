@@ -95,6 +95,7 @@ if __name__ == "__main__":
             env_name=deployment_env, event_lambda_fn=meta_lambda_stack.meta_lambda, 
             event_prefix="claims/type=structured/", event_suffix=".csv"
         )
+        stage_bucket_stack.add_dependency(meta_lambda_stack)
 
     if bucket_exists(curated_bucket_name):
         curated_bucket_stack = ImportedBucketStack(app, "imported-curated-bucket", bucket_name=curated_bucket_name)
@@ -104,6 +105,7 @@ if __name__ == "__main__":
             env_name=deployment_env, event_lambda_fn=meta_lambda_stack.meta_lambda,
             event_prefix="claims/type=structured/", event_suffix=".parquet"
         )
+        curated_bucket_stack.add_dependency(meta_lambda_stack)
 
     if bucket_exists(application_bucket_name):
         application_bucket_stack = ImportedBucketStack(app, "imported-application-bucket", bucket_name=application_bucket_name)
@@ -113,6 +115,7 @@ if __name__ == "__main__":
             env_name=deployment_env, event_lambda_fn=meta_lambda_stack.meta_lambda,
             event_prefix="claims/model/fact/", event_suffix=".parquet"
         )
+        application_bucket_stack.add_dependency(meta_lambda_stack)
 
     
     # event notification stage -> curated
