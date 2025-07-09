@@ -1,0 +1,38 @@
+{
+  "Records": [
+    {
+      "eventVersion": "2.1",
+      "eventSource": "aws:s3",
+      "awsRegion": "us-east-1",
+      "eventTime": "2025-07-09T19:30:00.000Z",
+      "eventName": "ObjectCreated:Put",
+      "userIdentity": {
+        "principalId": "AWS:123456789012"
+      },
+      "requestParameters": {
+        "sourceIPAddress": "127.0.0.1"
+      },
+      "responseElements": {
+        "x-amz-request-id": "ABC123456789",
+        "x-amz-id-2": "abcde+XYZ=="
+      },
+      "s3": {
+        "s3SchemaVersion": "1.0",
+        "configurationId": "manual-test",
+        "bucket": {
+          "name": "stage-datalake-us-east-1-662305627796",
+          "ownerIdentity": {
+            "principalId": "EXAMPLE"
+          },
+          "arn": "arn:aws:s3:::stage-datalake-us-east-1-<account-id>"
+        },
+        "object": {
+          "key": "claims/type=structured/claims_fact.csv",
+          "size": 12345,
+          "eTag": "abc123etag",
+          "sequencer": "1234567890ABCDEF"
+        }
+      }
+    }
+  ]
+}

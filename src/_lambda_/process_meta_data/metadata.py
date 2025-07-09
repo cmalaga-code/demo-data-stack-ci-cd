@@ -16,7 +16,7 @@ def handler(event, context):
     bucket_name = None
     object_key = None
     try:
-        bucket_name = event['Records']['s3']['bucket']['name']
+        bucket_name = event['Records'][0]['s3']['bucket']['name']
         object_key = urllib.parse.unquote_plus(event['Records'][0]['s3']['object']['key'], encoding='utf-8')
         prefix = '/'.join(object_key.split("/")[:-1])
 
