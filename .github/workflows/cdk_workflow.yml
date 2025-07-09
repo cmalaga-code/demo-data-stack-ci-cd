@@ -23,7 +23,7 @@ jobs:
       PROD_ACCOUNT_ID: ${{ secrets.PROD_ACCOUNT_ID }}
       STAGE_ACCOUNT_ID: ${{ secrets.STAGE_ACCOUNT_ID }}
       DEV_ACCOUNT_ID: ${{ secrets.DEV_ACCOUNT_ID }}
-    steps:
+    steps: 
       - name: Checkout
         uses: actions/checkout@v3
 
