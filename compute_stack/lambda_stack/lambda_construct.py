@@ -29,7 +29,7 @@ class MetaLambdaStack(Stack):
                 resources=[
                     f"arn:aws:s3:::{os.environ['STAGE_BUCKET']}/*",
                     f"arn:aws:s3:::{os.environ['CURATED_BUCKET']}/*",
-                    f"arn:aws:s3:::{os.environ.get['APPLICATION_BUCKET']}/*",
+                    f"arn:aws:s3:::{os.environ['APPLICATION_BUCKET']}/*",
                     orchestration_stack.state_machine.state_machine_arn
                 ]
             )
@@ -65,7 +65,7 @@ class StructuredCurateDataLambdaStack(Stack):
                     "s3:GetObject",
                 ],
                 resources=[
-                    f"arn:aws:s3:::{os.environ.get('STAGE_BUCKET')}/*"
+                    f"arn:aws:s3:::{os.environ['STAGE_BUCKET']}/*"
                 ]
             )
         )
@@ -76,7 +76,7 @@ class StructuredCurateDataLambdaStack(Stack):
                     "s3:PutObject"
                 ],
                 resources=[
-                    f"arn:aws:s3:::{os.environ.get('CURATED_BUCKET')}/*"
+                    f"arn:aws:s3:::{os.environ['CURATED_BUCKET']}/*"
                 ]
             )
         )
