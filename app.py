@@ -44,30 +44,7 @@ if __name__ == "__main__":
     if missing:
         raise ValueError(f"Missing required environment variables: {', '.join(missing)}")
 
-    # data lake stack
-
-    stage_bucket_name = os.environ.get("STAGE_BUCKET")
-    curated_bucket_name = os.environ.get("CURATED_BUCKET")
-    application_bucket_name = os.environ.get("APPLICATION_BUCKET")
-    deployment_env = os.environ.get("ENV")
-
-
-    if bucket_exists(stage_bucket_name):
-        stage_bucket_stack = ImportedBucketStack(app, "imported-stage-bucket", bucket_name=stage_bucket_name)
-    else:
-        stage_bucket_stack = S3BucketStack(app, "stage-bucket", bucket_name=stage_bucket_name, env_name=deployment_env)
-
-    if bucket_exists(curated_bucket_name):
-        curated_bucket_stack = ImportedBucketStack(app, "imported-curated-bucket", bucket_name=curated_bucket_name)
-    else:
-        curated_bucket_stack = S3BucketStack(app, "curated-bucket", bucket_name=curated_bucket_name, env_name=deployment_env)
-
-    if bucket_exists(application_bucket_name):
-        application_bucket_stack = ImportedBucketStack(app, "imported-application-bucket", bucket_name=application_bucket_name)
-    else:
-        application_bucket_stack = S3BucketStack(app, "application-bucket", bucket_name=application_bucket_name, env_name=deployment_env)
-
-    # lambda and glue stack
+    # compute 
 
     structured_curated_lambda_stack = StructuredCurateDataLambdaStack(app, "structured-curated-lambda-stack")
     structured_application_lambda_stack = StructuredApplicationDataLambdaStack(app, "structured-application-lambda-stack")
@@ -100,86 +77,122 @@ if __name__ == "__main__":
         snowflake_model_claims_lambda_stack.fn
     )
 
+
     meta_lambda_stack = MetaLambdaStack(app, "meta-lambda-stack", orchestration_stack)
+
+    # data lake stack
+
+    stage_bucket_name = os.environ.get("STAGE_BUCKET")
+    curated_bucket_name = os.environ.get("CURATED_BUCKET")
+    application_bucket_name = os.environ.get("APPLICATION_BUCKET")
+    deployment_env = os.environ.get("ENV")
+
+    if bucket_exists(stage_bucket_name):
+        stage_bucket_stack = ImportedBucketStack(app, "imported-stage-bucket", bucket_name=stage_bucket_name)
+    else:
+        stage_bucket_stack = S3BucketStack(
+            app, "stage-bucket", bucket_name=stage_bucket_name, 
+            env_name=deployment_env, event_lambda_fn=meta_lambda_stack.meta_lambda, 
+            event_prefix="claims/type=structured/", event_suffix=".csv"
+        )
+
+    if bucket_exists(curated_bucket_name):
+        curated_bucket_stack = ImportedBucketStack(app, "imported-curated-bucket", bucket_name=curated_bucket_name)
+    else:
+        curated_bucket_stack = S3BucketStack(
+            app, "curated-bucket", bucket_name=curated_bucket_name, 
+            env_name=deployment_env, event_lambda_fn=meta_lambda_stack.meta_lambda,
+            event_prefix="claims/type=structured/", event_suffix=".parquet"
+        )
+
+    if bucket_exists(application_bucket_name):
+        application_bucket_stack = ImportedBucketStack(app, "imported-application-bucket", bucket_name=application_bucket_name)
+    else:
+        application_bucket_stack = S3BucketStack(
+            app, "application-bucket", bucket_name=application_bucket_name, 
+            env_name=deployment_env, event_lambda_fn=meta_lambda_stack.meta_lambda,
+            event_prefix="claims/model/fact/", event_suffix=".parquet"
+        )
+
     
     # event notification stage -> curated
-    if not stage_bucket_stack.imported:
-        stage_bucket_stack.bucket.add_event_notification(
-            s3.EventType.OBJECT_CREATED_PUT,
-            s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-            s3.NotificationKeyFilter(prefix="claims/type=structured/", suffix=".csv")
-        )
+    # if not stage_bucket_stack.imported:
+    #     stage_bucket_stack.bucket.add_event_notification(
+    #         s3.EventType.OBJECT_CREATED_PUT,
+    #         s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
+    #         s3.NotificationKeyFilter(prefix="", suffix=".csv")
+    #     )
     
-    if not stage_bucket_stack.imported:
-        stage_bucket_stack.bucket.add_event_notification(
-            s3.EventType.OBJECT_CREATED_PUT,
-            s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-            s3.NotificationKeyFilter(prefix="patient/type=structured/", suffix=".csv")
-        )
+    # if not stage_bucket_stack.imported:
+    #     stage_bucket_stack.bucket.add_event_notification(
+    #         s3.EventType.OBJECT_CREATED_PUT,
+    #         s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
+    #         s3.NotificationKeyFilter(prefix="patient/type=structured/", suffix=".csv")
+    #     )
 
-    if not stage_bucket_stack.imported:
-        stage_bucket_stack.bucket.add_event_notification(
-            s3.EventType.OBJECT_CREATED_PUT,
-            s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-            s3.NotificationKeyFilter(prefix="provider/type=structured/", suffix=".csv")
-        )
+    # if not stage_bucket_stack.imported:
+    #     stage_bucket_stack.bucket.add_event_notification(
+    #         s3.EventType.OBJECT_CREATED_PUT,
+    #         s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
+    #         s3.NotificationKeyFilter(prefix="provider/type=structured/", suffix=".csv")
+    #     )
 
-    if not stage_bucket_stack.imported:
-        stage_bucket_stack.bucket.add_event_notification(
-            s3.EventType.OBJECT_CREATED_PUT,
-            s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-            s3.NotificationKeyFilter(prefix="lab/type=semi-structured/", suffix=".json")
-        )
+    # if not stage_bucket_stack.imported:
+    #     stage_bucket_stack.bucket.add_event_notification(
+    #         s3.EventType.OBJECT_CREATED_PUT,
+    #         s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
+    #         s3.NotificationKeyFilter(prefix="lab/type=semi-structured/", suffix=".json")
+    #     )
     
-    if not stage_bucket_stack.imported:
-        stage_bucket_stack.bucket.add_event_notification(
-            s3.EventType.OBJECT_CREATED_PUT,
-            s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-            s3.NotificationKeyFilter(prefix="lab/type=unstructured/", suffix=".jpeg")
-        )
+    # if not stage_bucket_stack.imported:
+    #     stage_bucket_stack.bucket.add_event_notification(
+    #         s3.EventType.OBJECT_CREATED_PUT,
+    #         s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
+    #         s3.NotificationKeyFilter(prefix="lab/type=unstructured/", suffix=".jpeg")
+    #     )
 
-    # event notification curated (clean) -> application (model data)
-    if not curated_bucket_stack.imported:
-        curated_bucket_stack.bucket.add_event_notification(
-            s3.EventType.OBJECT_CREATED_PUT,
-            s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-            s3.NotificationKeyFilter(prefix="claims/type=structured/", suffix=".parquet")
-        )
+    # # event notification curated (clean) -> application (model data)
+    # if not curated_bucket_stack.imported:
+    #     curated_bucket_stack.bucket.add_event_notification(
+    #         s3.EventType.OBJECT_CREATED_PUT,
+    #         s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
+    #         s3.NotificationKeyFilter(prefix="claims/type=structured/", suffix=".parquet")
+    #     )
     
-    if not curated_bucket_stack.imported:
-        curated_bucket_stack.bucket.add_event_notification(
-            s3.EventType.OBJECT_CREATED_PUT,
-            s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-            s3.NotificationKeyFilter(prefix="patient/type=structured/", suffix=".parquet")
-        )
+    # if not curated_bucket_stack.imported:
+    #     curated_bucket_stack.bucket.add_event_notification(
+    #         s3.EventType.OBJECT_CREATED_PUT,
+    #         s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
+    #         s3.NotificationKeyFilter(prefix="patient/type=structured/", suffix=".parquet")
+    #     )
 
-    if not curated_bucket_stack.imported:
-        curated_bucket_stack.bucket.add_event_notification(
-            s3.EventType.OBJECT_CREATED_PUT,
-            s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-            s3.NotificationKeyFilter(prefix="provider/type=structured/", suffix=".parquet")
-        )
+    # if not curated_bucket_stack.imported:
+    #     curated_bucket_stack.bucket.add_event_notification(
+    #         s3.EventType.OBJECT_CREATED_PUT,
+    #         s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
+    #         s3.NotificationKeyFilter(prefix="provider/type=structured/", suffix=".parquet")
+    #     )
 
-    if not curated_bucket_stack.imported:
-        curated_bucket_stack.bucket.add_event_notification(
-            s3.EventType.OBJECT_CREATED_PUT,
-            s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-            s3.NotificationKeyFilter(prefix="lab/type=structured/", suffix=".parquet")
-        )
+    # if not curated_bucket_stack.imported:
+    #     curated_bucket_stack.bucket.add_event_notification(
+    #         s3.EventType.OBJECT_CREATED_PUT,
+    #         s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
+    #         s3.NotificationKeyFilter(prefix="lab/type=structured/", suffix=".parquet")
+    #     )
     
-    if not curated_bucket_stack.imported:
-        curated_bucket_stack.bucket.add_event_notification(
-            s3.EventType.OBJECT_CREATED_PUT,
-            s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-            s3.NotificationKeyFilter(prefix="lab/type=unstructured/", suffix=".jpeg")
-        )
+    # if not curated_bucket_stack.imported:
+    #     curated_bucket_stack.bucket.add_event_notification(
+    #         s3.EventType.OBJECT_CREATED_PUT,
+    #         s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
+    #         s3.NotificationKeyFilter(prefix="lab/type=unstructured/", suffix=".jpeg")
+    #     )
     
-    if not application_bucket_stack.imported:
-        application_bucket_stack.bucket.add_event_notification(
-            s3.EventType.OBJECT_CREATED_PUT,
-            s3n.LambdaDestination(snowflake_model_claims_lambda_stack.fn),
-            s3.NotificationKeyFilter(prefix="claims/model/fact/", suffix=".parquet")
-        )
+    # if not application_bucket_stack.imported:
+    #     application_bucket_stack.bucket.add_event_notification(
+    #         s3.EventType.OBJECT_CREATED_PUT,
+    #         s3n.LambdaDestination(snowflake_model_claims_lambda_stack.fn),
+    #         s3.NotificationKeyFilter(prefix="claims/model/fact/", suffix=".parquet")
+    #     )
 
 
 
