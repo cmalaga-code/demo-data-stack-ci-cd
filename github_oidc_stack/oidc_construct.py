@@ -1,4 +1,3 @@
-import os
 from aws_cdk import aws_iam as iam, Stack, Duration
 from aws_cdk import App
 from constructs import Construct
@@ -34,21 +33,38 @@ class GitHubOIDCStack(Stack):
             # ]
         )
 
+        # demo
         role.add_to_policy(
             iam.PolicyStatement(
                 actions=[
-                    "s3:PutObject", 
-                    "s3:GetObject"
+                    # Lambda
+                    "lambda:*",
+                    # S3
+                    "s3:*",
+
+                    # Glue
+                    "glue:*",
+
+                    # Step Functions
+                    "states:*",
+
+                    # IAM (for creating roles for Lambda, Step Functions, etc.)
+                    "iam:PassRole",
+                    "iam:GetRole",
+                    "iam:CreateRole",
+                    "iam:AttachRolePolicy",
+                    "iam:PutRolePolicy",
+                    "iam:DeleteRole",
+                    "iam:DetachRolePolicy",
+                    "iam:DeleteRolePolicy"
                 ],
-                resources=[
-                    f"arn:aws:s3:::{os.environ.get("STAGE_BUCKET")}/*",
-                    f"arn:aws:s3:::{os.environ.get("CURATED_BUCKET")}/*",
-                    f"arn:aws:s3:::{os.environ.get("APPLICATION_BUCKET")}/*"
-                ]
+                resources=["*"]
             )
         )
+
 
 if __name__== "__main__":
     app = App()
     # OIDC Authentication For Temp Credentials (Temp Obtain access to Role) -- this is for the docker container and only execute once
     GitHubOIDCStack(app, "gitHub-oidc-stack")
+    app.synth()

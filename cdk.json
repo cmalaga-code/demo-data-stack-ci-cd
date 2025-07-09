@@ -1,6 +1,3 @@
 {
-  "app": "python3 app.py",
-  "context": {
-    "repoName": "cmalaga-code/demo-data-stack-ci-cd"
-  }
+  "app": "python3 app.py"
 }
