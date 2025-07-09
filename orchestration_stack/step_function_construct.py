@@ -15,12 +15,13 @@ class OrchestrationStack(Stack):
             structured_application_lambda_fn: _lambda_.IFunction,
             semi_structured_curated_lambda_fn: _lambda_.IFunction,
             unstructured_curated_lambda_fn: _lambda_.IFunction,
-            unstructured_application_lambda_fn: _lambda_.IFunction,
+            unstructured_application_lambda_fn: _lambda_.IFunction,  
             structured_curated_glue_name: str,
             structured_application_glue_name: str,
             semi_structured_curated_glue_name: str,
             unstructured_curated_glue_stack_name: str,
             unstructured_application_glue_stack_name: str,
+            snowflake_model_claims_lambda_fn: _lambda_.IFunction,
             **kwargs
         ) -> None:
         super().__init__(scope, id, **kwargs)
@@ -225,6 +226,13 @@ class OrchestrationStack(Stack):
                 Condition.string_matches("$.objectKey", "*type=unstructured*")
             ),
             unstructured_application_glue_task.next(success)
+        ).when(
+            Condition.and_(
+                Condition.number_greater_than("$.fileSize", SIZE_THRESHOLD),
+                Condition.string_matches("$.bucketNameLower", "*application*"),
+                Condition.string_matches("$.objectKey", "*model/fact*")
+            ),
+            snowflake_model_claims_lambda_fn.next(success)
         ).otherwise(success)
 
 

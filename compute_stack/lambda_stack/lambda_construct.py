@@ -1,4 +1,5 @@
 import os
+import json
 from aws_cdk import (
     Stack,
     aws_iam as iam,
@@ -260,6 +261,47 @@ class UnStructuredApplicationDataLambdaStack(Stack):
             timeout=Duration.seconds(80),
             memory_size=4096, # MB -- 4GB
             description="State task for state machine .. process unstructured data that is not big data",
+            role=lambda_role
+        )
+
+class SnowflakeModelLambdaStack(Stack):
+    def __init__(self, scope: Construct, id: str, **kwargs) -> None:
+        super().__init__(scope, id, **kwargs)
+
+        lambda_role = iam.Role(
+            self, "snowflake-lambda-exection-role",
+            assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
+            managed_policies=[
+                iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaBasicExecutionRole")
+            ]
+        )
+
+        lambda_role.add_to_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "s3:GetObject",
+                ],
+                resources=[
+                    f"arn:aws:s3:::{os.environ.get('APPLICATION_BUCKET')}/*"
+                ]
+            )
+        )
+
+        self.fn = _lambda.DockerImageFunction(
+            self, "snowflake-lambda-application-lambda",
+            code=_lambda.DockerImageCode.from_image_asset("src/_lambda_/ingest_data_model"),
+            timeout=Duration.seconds(80),
+            memory_size=4096, # MB -- 4GB
+            description="State task for state machine .. ingest data to model",
+            environment={
+                "SNOWFLAKE_ACCOUNT": os.environ["SNOWFLAKE_ACCOUNT"],
+                "SNOWFLAKE_USER": os.environ["SNOWFLAKE_USER"],
+                "SNOWFLAKE_ROLE": os.environ["SNOWFLAKE_ROLE"],
+                "SNOWFLAKE_PIPE": {
+                    "FACT_CLAIMS": json.dumps(os.environ["SNOWFLAKE_PIPE_FACT_CLAIMS"])
+                },
+                "SNOWFLAKE_PRIVATE_KEY": os.environ["SNOWFLAKE_PRIVATE_KEY"],  # base64-encoded
+            },
             role=lambda_role
         )
 

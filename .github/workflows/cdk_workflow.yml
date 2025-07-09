@@ -13,7 +13,12 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
+    env:
+      SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+      SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+      SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+      SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -21,14 +26,17 @@ jobs:
       - name: Set AWS Role ARN based on branch
         id: set-role
         run: |
-          if [[ "${GITHUB_REF##*/}" == "main" ]]; then
+          BRANCH_NAME="${GITHUB_REF##*/}"
+          echo "SNOWFLAKE_STAGE_FACT_CLAIMS=BRANCH_NAME_model_fact_claims_stage" >> $GITHUB_ENV
+          echo "SNOWFLAKE_PIPE_FACT_CLAIMS=${BRANCH_NAME}_MODEL_CLAIMS_FACT_PIPE" >> $GITHUB_ENV
+          if [[ BRANCH_NAME == "main" ]]; then
             echo "ENV=PROD" >> $GITHUB_ENV
             echo "REPO_NAME=${{ github.repository }}" >> $GITHUB_ENV
             echo "ROLE_ARN=arn:aws:iam::${{ secrets.PROD_ACCOUNT_ID }}:role/CDKAutoRole" >> $GITHUB_ENV
             echo "STAGE_BUCKET=stage-datalake-us-east-1-${{ secrets.PROD_ACCOUNT_ID }}" >> $GITHUB_ENV
             echo "CURATED_BUCKET=curated-datalake-us-east-1-${{ secrets.PROD_ACCOUNT_ID }}" >> $GITHUB_ENV
             echo "APPLICATION_BUCKET=application-datalake-us-east-1-${{ secrets.PROD_ACCOUNT_ID }}" >> $GITHUB_ENV
-          elif [[ "${GITHUB_REF##*/}" == "stage" ]]; then
+          elif [[ BRANCH_NAME == "stage" ]]; then
             echo "ENV=STAGE" >> $GITHUB_ENV
             echo "REPO_NAME=${{ github.repository }}" >> $GITHUB_ENV
             echo "ROLE_ARN=arn:aws:iam::${{ secrets.STAGE_ACCOUNT_ID }}:role/CDKAutoRole" >> $GITHUB_ENV
@@ -61,6 +69,9 @@ jobs:
 
       - name: CDK Diff
         run: cdk diff || true  # Prevents failure if there are changes
+      
+      - name: Destroy CDK stack (safe with retained S3)
+        run: cdk destroy --all --force
 
       - name: CDK Deploy
         run: cdk deploy --all --require-approval never --ci

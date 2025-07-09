@@ -11,7 +11,8 @@ from compute_stack.lambda_stack.lambda_construct import (
     SemiStructuredCurateDataLambdaStack,
     UnStructuredCurateDataLambdaStack,
     UnStructuredApplicationDataLambdaStack,
-    MetaLambdaStack
+    MetaLambdaStack,
+    SnowflakeModelLambdaStack
 )
 from compute_stack.glue_stack.glue_construct import (
     StructuredCurateDataGlueStack,
@@ -74,6 +75,7 @@ if __name__ == "__main__":
     semi_structured_curated_lambda_stack = SemiStructuredCurateDataLambdaStack(app, "semi-structured-curated-lambda-stack")
     unstructured_curated_lambda_stack = UnStructuredCurateDataLambdaStack(app, "unstructured-curated-lambda-stack")
     unstructured_application_lambda_stack = UnStructuredApplicationDataLambdaStack(app, "unstructured-application-lambda-stack")
+    snowflake_model_claims_lambda_stack = SnowflakeModelLambdaStack(app, "snowflake-model-claims-lambda-stack")
 
     
     structured_curated_glue_stack = StructuredCurateDataGlueStack(app, "structured-curated-glue-stack")
@@ -95,7 +97,8 @@ if __name__ == "__main__":
         structured_application_glue_stack.glue_job.name,
         semi_structured_curated_glue_stack.glue_job.name,
         unstructured_curated_glue_stack.glue_job.name,
-        unstructured_application_glue_stack.glue_job.name
+        unstructured_application_glue_stack.glue_job.name,
+        snowflake_model_claims_lambda_stack.fn
     )
 
     meta_lambda_stack = MetaLambdaStack(app, "meta-lambda-stack", orchestration_stack)
@@ -171,6 +174,14 @@ if __name__ == "__main__":
             s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
             s3.NotificationKeyFilter(prefix="lab/type=unstructured/", suffix=".jpeg")
         )
+    
+    if not application_bucket_stack.imported:
+        application_bucket_stack.bucket.add_event_notification(
+            s3.EventType.OBJECT_CREATED_PUT,
+            s3n.LambdaDestination(snowflake_model_claims_lambda_stack.fn),
+            s3.NotificationKeyFilter(prefix="claims/model/fact/", suffix=".parquet")
+        )
+
 
 
     # Synthesize app (executes code and generates CloudFormation Template in JSON format)

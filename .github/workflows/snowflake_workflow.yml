@@ -1,4 +1,4 @@
-name: Deploy Snowflake Structures
+v5name: Deploy Snowflake Structures
 
 on:
   push:
@@ -15,6 +15,7 @@ jobs:
       SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
       SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
       SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
+      SNOWFLAKE_STORAGE_INTEGRATION: S3_INTEGRATION
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -31,16 +32,22 @@ jobs:
       - name: Set environment-specific database and schema
         run: |
           BRANCH_NAME="${GITHUB_REF##*/}"
+          echo "SNOWFLAKE_STAGE_FACT_CLAIMS=${BRANCH_NAME}_model_fact_claims_stage" >> $GITHUB_ENV
+          echo "SNOWFLAKE_PIPE_FACT_CLAIMS=${BRANCH_NAME}_MODEL_CLAIMS_FACT_PIPE" >> $GITHUB_ENV
           if [[ "$BRANCH_NAME" == "main" ]]; then
+            echo "SNOWFLAKE_BUCKET=application-datalake-us-east-1-${{ secrets.PROD_ACCOUNT_ID }}" >> $GITHUB_ENV
             echo "SNOWFLAKE_DATABASE=HEALTH_TECH" >> $GITHUB_ENV
             echo "SNOWFLAKE_SCHEMA=PROD" >> $GITHUB_ENV
           elif [[ "$BRANCH_NAME" == "stage" ]]; then
+            echo "SNOWFLAKE_BUCKET=application-datalake-us-east-1-${{ secrets.STAGE_ACCOUNT_ID }}" >> $GITHUB_ENV
             echo "SNOWFLAKE_DATABASE=HEALTH_TECH" >> $GITHUB_ENV
             echo "SNOWFLAKE_SCHEMA=STAGE" >> $GITHUB_ENV
           else
+            echo "SNOWFLAKE_BUCKET=application-datalake-us-east-1-${{ secrets.DEV_ACCOUNT_ID }}" >> $GITHUB_ENV
             echo "SNOWFLAKE_DATABASE=HEALTH_TECH" >> $GITHUB_ENV
             echo "SNOWFLAKE_SCHEMA=DEV" >> $GITHUB_ENV
           fi
+          echo "SNOWFLAKE_STAGE_FACT_CLAIMS_URL=s3://${SNOWFLAKE_BUCKET}/claims/model/fact/" >> $GITHUB_ENV
           
       - name: Decode & write private key to file
         run: |
@@ -87,9 +94,12 @@ jobs:
             snow sql -f "$file"
           done 
 
-      - name: Deploy external stage
+      - name: Deploy external stage .. storage integration
         run: |
           snow connection set-default my_snowflake
-          snow sql -q "CREATE STAGE ${BRANCH_NAME}_model_claims_stage"
-          snow sql -q "CREATE STAGE ${BRANCH_NAME}_model_lab_stage"
-          snow sql -q "CREATE STAGE ${BRANCH_NAME}_model_application_stage"
+          snow sql -q "CREATE OR REPLACE STAGE ${SNOWFLAKE_STAGE_FACT_CLAIMS} URL = '${SNOWFLAKE_STAGE_FACT_CLAIMS_URL}' STORAGE_INTEGRATION = ${SNOWFLAKE_STORAGE_INTEGRATION}"
+    
+      - name: Declare snowpipe for data model
+        run: |
+          snow connection set-default my_snowflake
+          snow sql -q "CREATE OR REPLACE PIPE ${SNOWFLAKE_PIPE_FACT_CLAIMS} AUTO_INGEST = FALSE AS COPY INTO FACT_CLAIMS FROM @${SNOWFLAKE_STAGE_FACT_CLAIMS} FILE_FORMAT = (TYPE = 'PARQUET')"
