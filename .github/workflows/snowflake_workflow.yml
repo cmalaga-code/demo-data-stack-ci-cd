@@ -47,7 +47,6 @@ jobs:
             echo "SNOWFLAKE_DATABASE=HEALTH_TECH" >> $GITHUB_ENV
             echo "SNOWFLAKE_SCHEMA=DEV" >> $GITHUB_ENV
           fi
-          echo "SNOWFLAKE_STAGE_FACT_CLAIMS_URL=s3://${SNOWFLAKE_BUCKET}/claims/model/fact/" >> $GITHUB_ENV
           
       - name: Decode & write private key to file
         run: |
@@ -97,6 +96,7 @@ jobs:
       - name: Deploy external stage .. storage integration
         run: |
           snow connection set-default my_snowflake
+          SNOWFLAKE_STAGE_FACT_CLAIMS_URL=s3://${SNOWFLAKE_BUCKET}/claims/model/fact/
           snow sql -q "CREATE OR REPLACE STAGE ${SNOWFLAKE_STAGE_FACT_CLAIMS} URL = '${SNOWFLAKE_STAGE_FACT_CLAIMS_URL}' STORAGE_INTEGRATION = ${SNOWFLAKE_STORAGE_INTEGRATION}"
     
       - name: Declare snowpipe for data model
