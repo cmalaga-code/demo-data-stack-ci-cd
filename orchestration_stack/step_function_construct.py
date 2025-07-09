@@ -72,6 +72,13 @@ class OrchestrationStack(Stack):
         ).add_catch(
             sfn.Fail(self, "job-unstructured-application-lambda-task-failed", error="job-unstructured-application-lambda-task-error", cause="failed")
         )
+        snowflake_model_claims_fact_fn_task = tasks.LambdaInvoke(
+            self, "job-snowflake-model-claims-fact-fn-task",
+            lambda_function=snowflake_model_claims_lambda_fn,
+            output_path="$.Payload"
+        ).add_catch(
+            sfn.Fail(self, "job-snowflake-model-claims-fact-fn-task-failed", error="job-snowflake-model-claims-fact-fn-task-error", cause="failed")
+        )
         # define glue task
         structured_curated_glue_task = tasks.GlueStartJobRun(
             self, "job-structured-curated-glue-task",
@@ -152,7 +159,6 @@ class OrchestrationStack(Stack):
         ).add_catch(
             sfn.Fail(self, "job-unstructured-application-glue-task-failed", error="job-unstructured-application-glue-task-error", cause="failed")
         )
-        
         # define choice per size
         size_bucket_structure_choice = Choice(self, "Check File Size, Bucket and Structure")
 
@@ -232,7 +238,7 @@ class OrchestrationStack(Stack):
                 Condition.string_matches("$.bucketNameLower", "*application*"),
                 Condition.string_matches("$.objectKey", "*model/fact*")
             ),
-            snowflake_model_claims_lambda_fn.next(success)
+            snowflake_model_claims_fact_fn_task.next(success)
         ).otherwise(success)
 
 
