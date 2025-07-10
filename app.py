@@ -96,7 +96,7 @@ if __name__ == "__main__":
         stage_bucket_stack.add_dependency(meta_lambda_stack)
 
         meta_lambda_stack.meta_lambda.add_permission(
-            "AllowInvokeFromS3",
+            "allow-invoke-from-s3-stage",
             principal=iam.ServicePrincipal("s3.amazonaws.com"),
             source_arn=stage_bucket_stack.bucket.bucket_arn
         )
@@ -110,7 +110,7 @@ if __name__ == "__main__":
         stage_bucket_stack.add_dependency(meta_lambda_stack)
 
         meta_lambda_stack.meta_lambda.add_permission(
-            "AllowInvokeFromS3",
+            "allow-invoke-from-s3-stage",
             principal=iam.ServicePrincipal("s3.amazonaws.com"),
             source_arn=stage_bucket_stack.bucket.bucket_arn
         )
@@ -123,7 +123,7 @@ if __name__ == "__main__":
         )
         curated_bucket_stack.add_dependency(meta_lambda_stack)
         meta_lambda_stack.meta_lambda.add_permission(
-            "AllowInvokeFromS3",
+            "allow-invoke-from-s3-curated",
             principal=iam.ServicePrincipal("s3.amazonaws.com"),
             source_arn=curated_bucket_stack.bucket.bucket_arn
         )
@@ -135,7 +135,7 @@ if __name__ == "__main__":
         )
         curated_bucket_stack.add_dependency(meta_lambda_stack)
         meta_lambda_stack.meta_lambda.add_permission(
-            "AllowInvokeFromS3",
+            "allow-invoke-from-s3-curated",
             principal=iam.ServicePrincipal("s3.amazonaws.com"),
             source_arn=curated_bucket_stack.bucket.bucket_arn
         )
@@ -148,7 +148,7 @@ if __name__ == "__main__":
         )
         application_bucket_stack.add_dependency(meta_lambda_stack)
         meta_lambda_stack.meta_lambda.add_permission(
-            "AllowInvokeFromS3",
+            "allow-invoke-from-s3-application",
             principal=iam.ServicePrincipal("s3.amazonaws.com"),
             source_arn=application_bucket_stack.bucket.bucket_arn
         )
@@ -160,7 +160,7 @@ if __name__ == "__main__":
         )
         application_bucket_stack.add_dependency(meta_lambda_stack)
         meta_lambda_stack.meta_lambda.add_permission(
-            "AllowInvokeFromS3",
+            "allow-invoke-from-s3-application",
             principal=iam.ServicePrincipal("s3.amazonaws.com"),
             source_arn=application_bucket_stack.bucket.bucket_arn
         )
