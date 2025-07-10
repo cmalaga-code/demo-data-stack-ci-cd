@@ -68,17 +68,7 @@ jobs:
 
       - name: CDK Diff
         run: cdk diff || true  # Prevents failure if there are changes
-      
-      - name: Destroy Event Trigger (safe with retained S3)
-        run: |
-          cdk destroy imported-application-bucket --force
-          cdk destroy imported-curated-bucket --force
-          cdk destroy imported-stage-bucket --force
-          cdk destroy application-bucket --force
-          cdk destroy curated-bucket --force
-          cdk destroy stage-bucket --force
-          cdk destroy meta-lambda-stack --force
-
+        
       - name: CDK Deploy
         run: cdk deploy --all --require-approval never --ci
   snowflake-deploy:
