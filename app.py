@@ -93,7 +93,6 @@ if __name__ == "__main__":
             event_lambda_fn=meta_lambda_stack.meta_lambda, 
             event_prefix="claims/type=structured/", event_suffix=".csv"
         )
-        stage_bucket_stack.add_dependency(meta_lambda_stack)
 
         meta_lambda_stack.meta_lambda.add_permission(
             "allow-invoke-from-s3-stage",
@@ -107,7 +106,6 @@ if __name__ == "__main__":
             env_name=deployment_env, event_lambda_fn=meta_lambda_stack.meta_lambda, 
             event_prefix="claims/type=structured/", event_suffix=".csv"
         )
-        stage_bucket_stack.add_dependency(meta_lambda_stack)
 
         meta_lambda_stack.meta_lambda.add_permission(
             "allow-invoke-from-s3-stage",
@@ -121,7 +119,7 @@ if __name__ == "__main__":
             event_lambda_fn=meta_lambda_stack.meta_lambda, 
             event_prefix="claims/type=structured/", event_suffix=".parquet"
         )
-        curated_bucket_stack.add_dependency(meta_lambda_stack)
+
         meta_lambda_stack.meta_lambda.add_permission(
             "allow-invoke-from-s3-curated",
             principal=iam.ServicePrincipal("s3.amazonaws.com"),
@@ -133,7 +131,7 @@ if __name__ == "__main__":
             env_name=deployment_env, event_lambda_fn=meta_lambda_stack.meta_lambda,
             event_prefix="claims/type=structured/", event_suffix=".parquet"
         )
-        curated_bucket_stack.add_dependency(meta_lambda_stack)
+
         meta_lambda_stack.meta_lambda.add_permission(
             "allow-invoke-from-s3-curated",
             principal=iam.ServicePrincipal("s3.amazonaws.com"),
@@ -146,7 +144,7 @@ if __name__ == "__main__":
             event_lambda_fn=meta_lambda_stack.meta_lambda, 
             event_prefix="claims/model/fact/", event_suffix=".parquet"
         )
-        application_bucket_stack.add_dependency(meta_lambda_stack)
+
         meta_lambda_stack.meta_lambda.add_permission(
             "allow-invoke-from-s3-application",
             principal=iam.ServicePrincipal("s3.amazonaws.com"),
@@ -158,7 +156,7 @@ if __name__ == "__main__":
             env_name=deployment_env, event_lambda_fn=meta_lambda_stack.meta_lambda,
             event_prefix="claims/model/fact/", event_suffix=".parquet"
         )
-        application_bucket_stack.add_dependency(meta_lambda_stack)
+        
         meta_lambda_stack.meta_lambda.add_permission(
             "allow-invoke-from-s3-application",
             principal=iam.ServicePrincipal("s3.amazonaws.com"),
