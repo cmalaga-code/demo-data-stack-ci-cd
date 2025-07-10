@@ -31,7 +31,7 @@
           "size": 12345,
           "eTag": "abc123etag",
           "sequencer": "1234567890ABCDEF"
-        }
+        } 
       }
     }
   ]
