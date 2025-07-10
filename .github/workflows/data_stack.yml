@@ -1,4 +1,4 @@
-name: Deploy Data Stack ${{ github.ref_name }}
+name: Deploy Data Stack
 
 on:
   push:
