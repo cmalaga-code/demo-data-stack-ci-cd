@@ -1,6 +1,6 @@
 import os
 import boto3
-from aws_cdk import App, aws_s3 as s3, aws_s3_notifications as s3n
+from aws_cdk import App, aws_s3 as s3, aws_s3_notifications as s3n, aws_iam as iam
 from botocore.exceptions import ClientError
 
 from data_lake_stack.buckets import S3BucketStack, ImportedBucketStack
@@ -82,10 +82,10 @@ if __name__ == "__main__":
 
     # data lake stack
 
-    stage_bucket_name = os.environ.get("STAGE_BUCKET")
-    curated_bucket_name = os.environ.get("CURATED_BUCKET")
-    application_bucket_name = os.environ.get("APPLICATION_BUCKET")
-    deployment_env = os.environ.get("ENV")
+    stage_bucket_name = os.environ["STAGE_BUCKET"]
+    curated_bucket_name = os.environ["CURATED_BUCKET"]
+    application_bucket_name = os.environ["APPLICATION_BUCKET"]
+    deployment_env = os.environ["ENV"]
 
     if bucket_exists(stage_bucket_name):
         stage_bucket_stack = ImportedBucketStack(
@@ -94,6 +94,13 @@ if __name__ == "__main__":
             event_prefix="claims/type=structured/", event_suffix=".csv"
         )
         stage_bucket_stack.add_dependency(meta_lambda_stack)
+
+        meta_lambda_stack.meta_lambda.add_permission(
+            "AllowInvokeFromS3",
+            principal=iam.ServicePrincipal("s3.amazonaws.com"),
+            source_arn=stage_bucket_stack.bucket.bucket_arn
+        )
+
     else:
         stage_bucket_stack = S3BucketStack(
             app, "stage-bucket", bucket_name=stage_bucket_name, 
@@ -102,6 +109,12 @@ if __name__ == "__main__":
         )
         stage_bucket_stack.add_dependency(meta_lambda_stack)
 
+        meta_lambda_stack.meta_lambda.add_permission(
+            "AllowInvokeFromS3",
+            principal=iam.ServicePrincipal("s3.amazonaws.com"),
+            source_arn=stage_bucket_stack.bucket.bucket_arn
+        )
+
     if bucket_exists(curated_bucket_name):
         curated_bucket_stack = ImportedBucketStack(
             app, "imported-curated-bucket", bucket_name=curated_bucket_name,
@@ -109,6 +122,11 @@ if __name__ == "__main__":
             event_prefix="claims/type=structured/", event_suffix=".parquet"
         )
         curated_bucket_stack.add_dependency(meta_lambda_stack)
+        meta_lambda_stack.meta_lambda.add_permission(
+            "AllowInvokeFromS3",
+            principal=iam.ServicePrincipal("s3.amazonaws.com"),
+            source_arn=curated_bucket_stack.bucket.bucket_arn
+        )
     else:
         curated_bucket_stack = S3BucketStack(
             app, "curated-bucket", bucket_name=curated_bucket_name, 
@@ -116,14 +134,24 @@ if __name__ == "__main__":
             event_prefix="claims/type=structured/", event_suffix=".parquet"
         )
         curated_bucket_stack.add_dependency(meta_lambda_stack)
+        meta_lambda_stack.meta_lambda.add_permission(
+            "AllowInvokeFromS3",
+            principal=iam.ServicePrincipal("s3.amazonaws.com"),
+            source_arn=curated_bucket_stack.bucket.bucket_arn
+        )
 
     if bucket_exists(application_bucket_name):
         application_bucket_stack = ImportedBucketStack(
             app, "imported-application-bucket", bucket_name=application_bucket_name,
             event_lambda_fn=meta_lambda_stack.meta_lambda, 
-            event_prefix="claims/model/fact", event_suffix=".parquet"
+            event_prefix="claims/model/fact/", event_suffix=".parquet"
         )
         application_bucket_stack.add_dependency(meta_lambda_stack)
+        meta_lambda_stack.meta_lambda.add_permission(
+            "AllowInvokeFromS3",
+            principal=iam.ServicePrincipal("s3.amazonaws.com"),
+            source_arn=application_bucket_stack.bucket.bucket_arn
+        )
     else:
         application_bucket_stack = S3BucketStack(
             app, "application-bucket", bucket_name=application_bucket_name, 
@@ -131,89 +159,13 @@ if __name__ == "__main__":
             event_prefix="claims/model/fact/", event_suffix=".parquet"
         )
         application_bucket_stack.add_dependency(meta_lambda_stack)
+        meta_lambda_stack.meta_lambda.add_permission(
+            "AllowInvokeFromS3",
+            principal=iam.ServicePrincipal("s3.amazonaws.com"),
+            source_arn=application_bucket_stack.bucket.bucket_arn
+        )
 
     
-    # event notification stage -> curated
-    # if not stage_bucket_stack.imported:
-    #     stage_bucket_stack.bucket.add_event_notification(
-    #         s3.EventType.OBJECT_CREATED_PUT,
-    #         s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-    #         s3.NotificationKeyFilter(prefix="", suffix=".csv")
-    #     )
-    
-    # if not stage_bucket_stack.imported:
-    #     stage_bucket_stack.bucket.add_event_notification(
-    #         s3.EventType.OBJECT_CREATED_PUT,
-    #         s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-    #         s3.NotificationKeyFilter(prefix="patient/type=structured/", suffix=".csv")
-    #     )
-
-    # if not stage_bucket_stack.imported:
-    #     stage_bucket_stack.bucket.add_event_notification(
-    #         s3.EventType.OBJECT_CREATED_PUT,
-    #         s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-    #         s3.NotificationKeyFilter(prefix="provider/type=structured/", suffix=".csv")
-    #     )
-
-    # if not stage_bucket_stack.imported:
-    #     stage_bucket_stack.bucket.add_event_notification(
-    #         s3.EventType.OBJECT_CREATED_PUT,
-    #         s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-    #         s3.NotificationKeyFilter(prefix="lab/type=semi-structured/", suffix=".json")
-    #     )
-    
-    # if not stage_bucket_stack.imported:
-    #     stage_bucket_stack.bucket.add_event_notification(
-    #         s3.EventType.OBJECT_CREATED_PUT,
-    #         s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-    #         s3.NotificationKeyFilter(prefix="lab/type=unstructured/", suffix=".jpeg")
-    #     )
-
-    # # event notification curated (clean) -> application (model data)
-    # if not curated_bucket_stack.imported:
-    #     curated_bucket_stack.bucket.add_event_notification(
-    #         s3.EventType.OBJECT_CREATED_PUT,
-    #         s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-    #         s3.NotificationKeyFilter(prefix="claims/type=structured/", suffix=".parquet")
-    #     )
-    
-    # if not curated_bucket_stack.imported:
-    #     curated_bucket_stack.bucket.add_event_notification(
-    #         s3.EventType.OBJECT_CREATED_PUT,
-    #         s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-    #         s3.NotificationKeyFilter(prefix="patient/type=structured/", suffix=".parquet")
-    #     )
-
-    # if not curated_bucket_stack.imported:
-    #     curated_bucket_stack.bucket.add_event_notification(
-    #         s3.EventType.OBJECT_CREATED_PUT,
-    #         s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-    #         s3.NotificationKeyFilter(prefix="provider/type=structured/", suffix=".parquet")
-    #     )
-
-    # if not curated_bucket_stack.imported:
-    #     curated_bucket_stack.bucket.add_event_notification(
-    #         s3.EventType.OBJECT_CREATED_PUT,
-    #         s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-    #         s3.NotificationKeyFilter(prefix="lab/type=structured/", suffix=".parquet")
-    #     )
-    
-    # if not curated_bucket_stack.imported:
-    #     curated_bucket_stack.bucket.add_event_notification(
-    #         s3.EventType.OBJECT_CREATED_PUT,
-    #         s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-    #         s3.NotificationKeyFilter(prefix="lab/type=unstructured/", suffix=".jpeg")
-    #     )
-    
-    # if not application_bucket_stack.imported:
-    #     application_bucket_stack.bucket.add_event_notification(
-    #         s3.EventType.OBJECT_CREATED_PUT,
-    #         s3n.LambdaDestination(snowflake_model_claims_lambda_stack.fn),
-    #         s3.NotificationKeyFilter(prefix="claims/model/fact/", suffix=".parquet")
-    #     )
-
-
-
     # Synthesize app (executes code and generates CloudFormation Template in JSON format)
     app.synth() # executing code and the apis create a file with the proper CloudFormation template cdk.out
 

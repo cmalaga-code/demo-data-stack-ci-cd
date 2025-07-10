@@ -34,48 +34,48 @@ class OrchestrationStack(Stack):
 
         # lambda tasks defined
         structured_curated_lambda_fn_task = tasks.LambdaInvoke(
-            self, "job-structured-curated-lambda-task",
+            self, "job-structured-curate",
             lambda_function=structured_curated_lambda_fn,
             output_path="$.Payload"
         )
 
         structured_application_lambda_fn_task = tasks.LambdaInvoke(
-            self, "job-structured-application-lambda-task",
+            self, "job-structured-model",
             lambda_function=structured_application_lambda_fn,
             output_path="$.Payload"
         )
 
         semi_structured_curated_lambda_fn_task = tasks.LambdaInvoke(
-            self, "job-semi-structured-curated-lambda-task",
+            self, "job-semistructured-curate",
             lambda_function=semi_structured_curated_lambda_fn,
             output_path="$.Payload"
         )
 
         unstructured_curated_lambda_fn_task = tasks.LambdaInvoke(
-            self, "job-unstructured-curated-lambda-task",
+            self, "job-unstructured-curate",
             lambda_function=unstructured_curated_lambda_fn,
             output_path="$.Payload"
         )
 
         unstructured_application_lambda_fn_task = tasks.LambdaInvoke(
-            self, "job-unstructured-application-lambda-task",
+            self, "job-unstructured-model",
             lambda_function=unstructured_application_lambda_fn,
             output_path="$.Payload"
         )
         snowflake_model_claims_fact_fn_task_small = tasks.LambdaInvoke(
-            self, "job-snowflake-model-claims-fact-fn-task-small",
+            self, "job-snowflake-ingest-small",
             lambda_function=snowflake_model_claims_lambda_fn,
             output_path="$.Payload"
         )
 
         snowflake_model_claims_fact_fn_task_big = tasks.LambdaInvoke(
-            self, "job-snowflake-model-claims-fact-fn-task-big",
+            self, "job-snowflake-ingest-big",
             lambda_function=snowflake_model_claims_lambda_fn,
             output_path="$.Payload"
         )
         # define glue task
         structured_curated_glue_task = tasks.GlueStartJobRun(
-            self, "job-structured-curated-glue-task",
+            self, "job-structured-curate-bigdata",
             glue_job_name=structured_curated_glue_name,
             arguments=sfn.TaskInput.from_object({
                 "--JOB_NAME" : structured_curated_glue_name,
@@ -89,7 +89,7 @@ class OrchestrationStack(Stack):
         )
 
         structured_application_glue_task = tasks.GlueStartJobRun(
-            self, "job-structured-application-glue-task",
+            self, "job-structured-model-bigdata",
             glue_job_name=structured_application_glue_name,
             arguments=sfn.TaskInput.from_object({
                 "--JOB_NAME" : structured_application_glue_name,
@@ -103,7 +103,7 @@ class OrchestrationStack(Stack):
         )
 
         semi_structured_curated_glue_task = tasks.GlueStartJobRun(
-            self, "job-semi-structured-curated-glue-task",
+            self, "job-semistructured-curate-bigdata",
             glue_job_name=semi_structured_curated_glue_name,
             arguments=sfn.TaskInput.from_object({
                 "--JOB_NAME" : semi_structured_curated_glue_name,
@@ -117,7 +117,7 @@ class OrchestrationStack(Stack):
         )
 
         unstructured_curated_glue_task = tasks.GlueStartJobRun(
-            self, "job-unstructured-curated-glue-task",
+            self, "job-unstructured-curate-bigdata",
             glue_job_name=unstructured_curated_glue_stack_name,
             arguments=sfn.TaskInput.from_object({
                 "--JOB_NAME" : unstructured_curated_glue_stack_name,
@@ -131,7 +131,7 @@ class OrchestrationStack(Stack):
         )
 
         unstructured_application_glue_task = tasks.GlueStartJobRun(
-            self, "job-unstructured-application-glue-task",
+            self, "job-unstructured-model-bigdata",
             glue_job_name=unstructured_application_glue_stack_name,
             arguments=sfn.TaskInput.from_object({
                 "--JOB_NAME" : unstructured_application_glue_stack_name,
@@ -233,93 +233,6 @@ class OrchestrationStack(Stack):
             sfn.Condition.is_present("$.Error"),
             failure
         ).otherwise(success)
-
-
-        # data_format_choice.when(
-        #     Condition.string_matches("$.objectKey", "*type=structured/*"),
-        #     structured_curated_lambda_fn_task.next(success)
-        # )
-
-        # size_bucket_structure_choice = Choice(self, "Check File Size, Bucket and Structure")
-
-        # size_bucket_structure_choice.when(
-        #     Condition.and_(
-        #         Condition.number_less_than("$.fileSize", SIZE_THRESHOLD),
-        #         Condition.string_matches("$.bucketNameLower", "*stage*"),
-        #         Condition.string_matches("$.objectKey", "*type=structured/*")
-        #     ),
-        #     structured_curated_lambda_fn_task.next(success)
-        # ).when(
-        #     Condition.and_(
-        #         Condition.number_greater_than("$.fileSize", SIZE_THRESHOLD),
-        #         Condition.string_matches("$.bucketNameLower", "*stage*"),
-        #         Condition.string_matches("$.objectKey", "*type=structured/*")
-        #     ),
-        #     structured_curated_glue_task.next(success)
-        # ).when(
-        #     Condition.and_(
-        #         Condition.number_less_than("$.fileSize", SIZE_THRESHOLD),
-        #         Condition.string_matches("$.bucketNameLower", "*curated*"),
-        #         Condition.string_matches("$.objectKey", "*type=structured/*")
-        #     ),
-        #     structured_application_lambda_fn_task.next(success)
-        # ).when(
-        #     Condition.and_(
-        #         Condition.number_greater_than("$.fileSize", SIZE_THRESHOLD),
-        #         Condition.string_matches("$.bucketNameLower", "*curated*"),
-        #         Condition.string_matches("$.objectKey", "*type=structured/*")
-        #     ),
-        #     structured_application_glue_task.next(success)
-        # ).when(
-        #     Condition.and_(
-        #         Condition.number_less_than("$.fileSize", SIZE_THRESHOLD),
-        #         Condition.string_matches("$.bucketNameLower", "*stage*"),
-        #         Condition.string_matches("$.objectKey", "*type=semi-structured/*")
-        #     ),
-        #     semi_structured_curated_lambda_fn_task.next(success)
-        # ).when(
-        #     Condition.and_(
-        #         Condition.number_greater_than("$.fileSize", SIZE_THRESHOLD),
-        #         Condition.string_matches("$.bucketNameLower", "*stage*"),
-        #         Condition.string_matches("$.objectKey", "*type=semi-structured/*")
-        #     ),
-        #     semi_structured_curated_glue_task.next(success)
-        # ).when(
-        #     Condition.and_(
-        #         Condition.number_less_than("$.fileSize", SIZE_THRESHOLD),
-        #         Condition.string_matches("$.bucketNameLower", "*stage*"),
-        #         Condition.string_matches("$.objectKey", "*type=unstructured/*")
-        #     ),
-        #     unstructured_curated_lambda_fn_task.next(success)
-        # ).when(
-        #     Condition.and_(
-        #         Condition.number_greater_than("$.fileSize", SIZE_THRESHOLD),
-        #         Condition.string_matches("$.bucketNameLower", "*stage*"),
-        #         Condition.string_matches("$.objectKey", "*type=unstructured/*")
-        #     ),
-        #     unstructured_curated_glue_task.next(success)
-        # ).when(
-        #     Condition.and_(
-        #         Condition.number_less_than("$.fileSize", SIZE_THRESHOLD),
-        #         Condition.string_matches("$.bucketNameLower", "*curated*"),
-        #         Condition.string_matches("$.objectKey", "*type=unstructured/*")
-        #     ),
-        #     unstructured_application_lambda_fn_task.next(success)
-        # ).when(
-        #     Condition.and_(
-        #         Condition.number_greater_than("$.fileSize", SIZE_THRESHOLD),
-        #         Condition.string_matches("$.bucketNameLower", "*curated*"),
-        #         Condition.string_matches("$.objectKey", "*type=unstructured/*")
-        #     ),
-        #     unstructured_application_glue_task.next(success)
-        # ).when(
-        #     Condition.and_(
-        #         Condition.number_greater_than("$.fileSize", SIZE_THRESHOLD),
-        #         Condition.string_matches("$.bucketNameLower", "*application*"),
-        #         Condition.string_matches("$.objectKey", "*model/fact*")
-        #     ),
-        #     snowflake_model_claims_fact_fn_task.next(success)
-        # ).otherwise(success)
 
 
         self.state_machine = sfn.StateMachine(
