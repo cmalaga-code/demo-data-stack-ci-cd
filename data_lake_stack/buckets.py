@@ -86,6 +86,7 @@
 import os
 from aws_cdk import (
     Stack,
+    RemovalPolicy,
     Duration,
     aws_lambda as _lambda,
     aws_iam as iam,
@@ -106,7 +107,7 @@ class MetaLambdaStack(Stack):
             self, "StageBucket",
             bucket_name=os.environ["STAGE_BUCKET"],
             versioned=True,
-            removal_policy=s3.RemovalPolicy.DESTROY if is_dev else s3.RemovalPolicy.RETAIN,
+            removal_policy=RemovalPolicy.DESTROY if is_dev else RemovalPolicy.RETAIN,
             auto_delete_objects=is_dev
         )
 
@@ -114,7 +115,7 @@ class MetaLambdaStack(Stack):
             self, "CuratedBucket",
             bucket_name=os.environ["CURATED_BUCKET"],
             versioned=True,
-            removal_policy=s3.RemovalPolicy.DESTROY if is_dev else s3.RemovalPolicy.RETAIN,
+            removal_policy=RemovalPolicy.DESTROY if is_dev else RemovalPolicy.RETAIN,
             auto_delete_objects=is_dev
         )
 
@@ -122,7 +123,7 @@ class MetaLambdaStack(Stack):
             self, "ApplicationBucket",
             bucket_name=os.environ["APPLICATION_BUCKET"],
             versioned=True,
-            removal_policy=s3.RemovalPolicy.DESTROY if is_dev else s3.RemovalPolicy.RETAIN,
+            removal_policy=RemovalPolicy.DESTROY if is_dev else RemovalPolicy.RETAIN,
             auto_delete_objects=is_dev
         )
 
@@ -171,7 +172,7 @@ class MetaLambdaStack(Stack):
             source_arn=stage_bucket.bucket_arn
         )
 
-        # 🔔 Wire up S3 event notification on stage bucket
+        # Wire up S3 event notification on stage bucket
         stage_bucket.add_event_notification(
             s3.EventType.OBJECT_CREATED,
             s3n.LambdaDestination(self.meta_lambda),
