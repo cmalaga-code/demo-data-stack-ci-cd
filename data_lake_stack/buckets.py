@@ -17,7 +17,7 @@ class ImportedBucketStack(Stack):
 
 
 class S3BucketStack(Stack):
-    def __init__(self, scope: Construct, id: str, bucket_name: str, env_name: str, event_fn, event_prefix, event_suffix, **kwargs):
+    def __init__(self, scope: Construct, id: str, bucket_name: str, env_name: str, **kwargs):
         super().__init__(scope, id, **kwargs)
 
         is_dev = str(env_name).upper() == "DEV"
@@ -28,12 +28,6 @@ class S3BucketStack(Stack):
             versioned=True,
             removal_policy=RemovalPolicy.DESTROY if is_dev else RemovalPolicy.RETAIN,  # for dev/testing
             auto_delete_objects=is_dev  # only works with DESTROY
-        )
-
-        self.bucket.add_event_notification(
-            s3.EventType.OBJECT_CREATED,
-            s3n.LambdaDestination(event_fn),
-            s3.NotificationKeyFilter(prefix=event_prefix, suffix=event_suffix)
         )
        
         self.imported = False

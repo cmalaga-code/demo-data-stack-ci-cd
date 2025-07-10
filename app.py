@@ -3,6 +3,7 @@ import boto3
 from aws_cdk import App, aws_s3 as s3, aws_s3_notifications as s3n, aws_iam as iam
 from botocore.exceptions import ClientError
 
+from notification_stack.notification import NotificationManagerStack
 from data_lake_stack.buckets import S3BucketStack, ImportedBucketStack
 from orchestration_stack.step_function_construct import OrchestrationStack
 from compute_stack.lambda_stack.lambda_construct import (
@@ -95,8 +96,7 @@ if __name__ == "__main__":
     else:
         stage_bucket_stack = S3BucketStack(
             app, "stage-bucket", bucket_name=stage_bucket_name, 
-            env_name=deployment_env, event_fn=meta_lambda_stack.meta_lambda, 
-            event_prefix="claims/type=structured/", event_suffix=".csv"
+            env_name=deployment_env
         )
 
     if bucket_exists(curated_bucket_name):
@@ -107,8 +107,7 @@ if __name__ == "__main__":
     else:
         curated_bucket_stack = S3BucketStack(
             app, "curated-bucket", bucket_name=curated_bucket_name, 
-            env_name=deployment_env, event_fn=meta_lambda_stack.meta_lambda, 
-            event_prefix="claims/type=structured/", event_suffix=".parquet"
+            env_name=deployment_env
         )
 
     if bucket_exists(application_bucket_name):
@@ -119,9 +118,19 @@ if __name__ == "__main__":
     else:
         application_bucket_stack = S3BucketStack(
             app, "application-bucket", bucket_name=application_bucket_name, 
-            env_name=deployment_env, event_fn=meta_lambda_stack.meta_lambda, 
-            event_prefix="claims/model/fact/", event_suffix=".parquet"
+            env_name=deployment_env
         )
+
+    notification_stack = NotificationManagerStack(
+        app, "bucket-notification-stack",
+        bucket_refs={
+            "stage": stage_bucket_stack.bucket,
+            "curated": curated_bucket_stack.bucket,
+            "application": application_bucket_stack.bucket
+        },
+        lambda_fn=meta_lambda_stack.meta_lambda
+    )
+
     
     # Synthesize app (executes code and generates CloudFormation Template in JSON format)
     app.synth() # executing code and the apis create a file with the proper CloudFormation template cdk.out
