@@ -1,6 +1,10 @@
+import os
+import boto3
+from botocore.exceptions import ClientError
 from aws_cdk import (
     Stack,
     Duration,
+    RemovalPolicy,
     aws_lambda as _lambda,
     aws_iam as iam,
     aws_s3 as s3,
@@ -9,11 +13,24 @@ from aws_cdk import (
 from constructs import Construct
 
 class MetaLambdaStack(Stack):
-    def __init__(self, scope: Construct, id: str, orchestration_stack, env_name: str, stage_bucket, curated_bucket, application_bucket, **kwargs) -> None:
+    def __init__(
+        self,
+        scope: Construct,
+        id: str,
+        orchestration_stack,
+        env_name: str,
+        **kwargs
+    ) -> None:
         super().__init__(scope, id, **kwargs)
 
+        is_dev = str(env_name).upper() == "DEV"
 
-        # Lambda role with full access to all buckets + Step Function
+        # Resolve or create buckets based on existence
+        stage_bucket = self.resolve_bucket("StageBucket", os.environ["STAGE_BUCKET"], is_dev)
+        curated_bucket = self.resolve_bucket("CuratedBucket", os.environ["CURATED_BUCKET"], is_dev)
+        application_bucket = self.resolve_bucket("ApplicationBucket", os.environ["APPLICATION_BUCKET"], is_dev)
+
+        # Lambda role with access to buckets + Step Function
         lambda_role = iam.Role(
             self, "MetaLambdaExecutionRole",
             assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
@@ -38,7 +55,7 @@ class MetaLambdaStack(Stack):
             })
         )
 
-        # Create Docker Lambda
+        # Docker Lambda
         self.meta_lambda = _lambda.DockerImageFunction(
             self, "MetaLambdaFunction",
             code=_lambda.DockerImageCode.from_image_asset("src/_lambda_/process_meta_data"),
@@ -51,14 +68,14 @@ class MetaLambdaStack(Stack):
             role=lambda_role
         )
 
-        # Allow S3 to trigger the Lambda
+        # Allow S3 to invoke Lambda
         self.meta_lambda.add_permission(
             "AllowInvokeFromS3",
             principal=iam.ServicePrincipal("s3.amazonaws.com"),
             source_arn=stage_bucket.bucket_arn
         )
 
-        # Wire up S3 event notification on stage bucket
+        # Add S3 → Lambda event trigger
         stage_bucket.add_event_notification(
             s3.EventType.OBJECT_CREATED,
             s3n.LambdaDestination(self.meta_lambda),
@@ -67,3 +84,23 @@ class MetaLambdaStack(Stack):
                 suffix=".csv"
             )
         )
+
+    def resolve_bucket(self, id: str, name: str, is_dev: bool) -> s3.IBucket:
+        if self.bucket_exists(name):
+            return s3.Bucket.from_bucket_name(self, f"Imported{id}", name)
+        else:
+            return s3.Bucket(
+                self, id,
+                bucket_name=name,
+                versioned=True,
+                removal_policy=RemovalPolicy.DESTROY if is_dev else RemovalPolicy.RETAIN,
+                auto_delete_objects=is_dev
+            )
+
+    def bucket_exists(self, bucket_name: str) -> bool:
+        try:
+            s3_client = boto3.client("s3")
+            s3_client.head_bucket(Bucket=bucket_name)
+            return True
+        except ClientError as e:
+            return e.response["Error"]["Code"] != "404"
