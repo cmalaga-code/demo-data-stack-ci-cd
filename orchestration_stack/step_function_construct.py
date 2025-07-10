@@ -37,47 +37,35 @@ class OrchestrationStack(Stack):
             self, "job-structured-curated-lambda-task",
             lambda_function=structured_curated_lambda_fn,
             output_path="$.Payload"
-        ).add_catch(
-            sfn.Fail(self, "job-structured-curated-lambda-task-failed", error="job-structured-curated-lambda-task-error", cause="failed")
         )
 
         structured_application_lambda_fn_task = tasks.LambdaInvoke(
             self, "job-structured-application-lambda-task",
             lambda_function=structured_application_lambda_fn,
             output_path="$.Payload"
-        ).add_catch(
-            sfn.Fail(self, "job-structured-application-lambda-task-failed", error="job-structured-application-lambda-task-error", cause="failed")
         )
 
         semi_structured_curated_lambda_fn_task = tasks.LambdaInvoke(
             self, "job-semi-structured-curated-lambda-task",
             lambda_function=semi_structured_curated_lambda_fn,
             output_path="$.Payload"
-        ).add_catch(
-            sfn.Fail(self, "lambda_curated_semi_structured_task_failed", error="lambda_curated_semi_structured_task_error", cause="failed")
         )
 
         unstructured_curated_lambda_fn_task = tasks.LambdaInvoke(
             self, "job-unstructured-curated-lambda-task",
             lambda_function=unstructured_curated_lambda_fn,
             output_path="$.Payload"
-        ).add_catch(
-            sfn.Fail(self, "job-semi-structured-curated-lambda-task-failed", error="job-semi-structured-curated-lambda-task-error", cause="failed")
         )
 
         unstructured_application_lambda_fn_task = tasks.LambdaInvoke(
             self, "job-unstructured-application-lambda-task",
             lambda_function=unstructured_application_lambda_fn,
             output_path="$.Payload"
-        ).add_catch(
-            sfn.Fail(self, "job-unstructured-application-lambda-task-failed", error="job-unstructured-application-lambda-task-error", cause="failed")
         )
         snowflake_model_claims_fact_fn_task = tasks.LambdaInvoke(
             self, "job-snowflake-model-claims-fact-fn-task",
             lambda_function=snowflake_model_claims_lambda_fn,
             output_path="$.Payload"
-        ).add_catch(
-            sfn.Fail(self, "job-snowflake-model-claims-fact-fn-task-failed", error="job-snowflake-model-claims-fact-fn-task-error", cause="failed")
         )
         # define glue task
         structured_curated_glue_task = tasks.GlueStartJobRun(
@@ -92,8 +80,6 @@ class OrchestrationStack(Stack):
             }),
             integration_pattern=sfn.IntegrationPattern.RUN_JOB,  # .sync waits for job to complete
             result_path="$.glue_result"
-        ).add_catch(
-            sfn.Fail(self, "structured-curated-glue-task-failed", error="structured-curated-glue-task-error", cause="failed")
         )
 
         structured_application_glue_task = tasks.GlueStartJobRun(
@@ -108,8 +94,6 @@ class OrchestrationStack(Stack):
             }),
             integration_pattern=sfn.IntegrationPattern.RUN_JOB,  # .sync waits for job to complete
             result_path="$.glue_result"
-        ).add_catch(
-            sfn.Fail(self, "job-structured-application-glue-task-failed", error="job-structured-application-glue-task-error", cause="failed")
         )
 
         semi_structured_curated_glue_task = tasks.GlueStartJobRun(
@@ -124,8 +108,6 @@ class OrchestrationStack(Stack):
             }),
             integration_pattern=sfn.IntegrationPattern.RUN_JOB,  # .sync waits for job to complete
             result_path="$.glue_result"
-        ).add_catch(
-            sfn.Fail(self, "job-semi-structured-curated-glue-task-failed", error="job-semi-structured-curated-glue-task-error", cause="failed")
         )
 
         unstructured_curated_glue_task = tasks.GlueStartJobRun(
@@ -140,8 +122,6 @@ class OrchestrationStack(Stack):
             }),
             integration_pattern=sfn.IntegrationPattern.RUN_JOB,  # .sync waits for job to complete
             result_path="$.glue_result"
-        ).add_catch(
-            sfn.Fail(self, "job-unstructured-curated-glue-task-failed", error="job-unstructured-curated-glue-task-error", cause="failed")
         )
 
         unstructured_application_glue_task = tasks.GlueStartJobRun(
@@ -156,8 +136,6 @@ class OrchestrationStack(Stack):
             }),
             integration_pattern=sfn.IntegrationPattern.RUN_JOB,  # .sync waits for job to complete
             result_path="$.glue_result"
-        ).add_catch(
-            sfn.Fail(self, "job-unstructured-application-glue-task-failed", error="job-unstructured-application-glue-task-error", cause="failed")
         )
         # define choice per size
         file_size_choice = Choice(self, "Check File Size")
