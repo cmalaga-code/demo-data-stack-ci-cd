@@ -62,8 +62,14 @@ class OrchestrationStack(Stack):
             lambda_function=unstructured_application_lambda_fn,
             output_path="$.Payload"
         )
-        snowflake_model_claims_fact_fn_task = tasks.LambdaInvoke(
-            self, "job-snowflake-model-claims-fact-fn-task",
+        snowflake_model_claims_fact_fn_task_small = tasks.LambdaInvoke(
+            self, "job-snowflake-model-claims-fact-fn-task-small",
+            lambda_function=snowflake_model_claims_lambda_fn,
+            output_path="$.Payload"
+        )
+
+        snowflake_model_claims_fact_fn_task_big = tasks.LambdaInvoke(
+            self, "job-snowflake-model-claims-fact-fn-task-big",
             lambda_function=snowflake_model_claims_lambda_fn,
             output_path="$.Payload"
         )
@@ -170,7 +176,7 @@ class OrchestrationStack(Stack):
             data_format_curated
         ).when(
             Condition.string_matches("$.bucketNameLower", "*application*"),
-            snowflake_model_claims_fact_fn_task.next(success)
+            snowflake_model_claims_fact_fn_task_small.next(success)
         ).otherwise(failure)
 
         bucket_big_data_choice.when(
@@ -181,7 +187,7 @@ class OrchestrationStack(Stack):
             data_format_curated_big_data
         ).when(
             Condition.string_matches("$.bucketNameLower", "*application*"),
-            snowflake_model_claims_fact_fn_task.next(success)
+            snowflake_model_claims_fact_fn_task_big.next(success)
         ).otherwise(failure)
 
         data_format_stage.when(
