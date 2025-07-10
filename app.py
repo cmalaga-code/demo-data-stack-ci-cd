@@ -76,7 +76,7 @@ orchestration_stack = OrchestrationStack(
 )
 
 # Finalized Lambda + buckets + event notification
-meta_lambda_stack = MetaLambdaStack(app, "meta-lambda-stack", orchestration_stack, env_name=deployment_env)
+meta_lambda_stack = MetaLambdaStack(app, "meta-lambda-stack", orchestration_stack, env_name=deployment_env) 
 
 # Synthesize to generate CloudFormation templates
 app.synth()
