@@ -72,3 +72,19 @@ cdk deploy TransformationStack
 - State machine
 - How will the data be processed and what will happen
 
+### Snowpipe
+
+POST https://<account>.snowflakecomputing.com/v1/data/pipes/<fully_qualified_pipe_name>/insertFiles?requestId=<uuid>
+
+{
+  "files": [
+    {
+      "path": "path/to/file1.parquet"
+    },
+    {
+      "path": "path/to/file2.parquet"
+    }
+  ]
+}
+
+
