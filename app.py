@@ -98,11 +98,6 @@ if __name__ == "__main__":
             s3.NotificationKeyFilter(prefix="claims/type=structured/", suffix=".csv")
         )
 
-        meta_lambda_stack.meta_lambda.add_permission(
-            "allow-invoke-from-s3-stage",
-            principal=iam.ServicePrincipal("s3.amazonaws.com"),
-            source_arn=stage_bucket_stack.bucket.bucket_arn
-        )
     else:
         stage_bucket_stack = S3BucketStack(
             app, "stage-bucket", bucket_name=stage_bucket_name, 
@@ -113,13 +108,7 @@ if __name__ == "__main__":
             s3.EventType.OBJECT_CREATED,
             s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
             s3.NotificationKeyFilter(prefix="claims/type=structured/", suffix=".csv")
-        )
-
-        meta_lambda_stack.meta_lambda.add_permission(
-            "allow-invoke-from-s3-stage",
-            principal=iam.ServicePrincipal("s3.amazonaws.com"),
-            source_arn=stage_bucket_stack.bucket.bucket_arn
-        )
+        )        
 
     if bucket_exists(curated_bucket_name):
         curated_bucket_stack = ImportedBucketStack(
@@ -132,11 +121,6 @@ if __name__ == "__main__":
             s3.NotificationKeyFilter(prefix="claims/type=structured/", suffix=".parquet")
         )
 
-        meta_lambda_stack.meta_lambda.add_permission(
-            "allow-invoke-from-s3-curated",
-            principal=iam.ServicePrincipal("s3.amazonaws.com"),
-            source_arn=curated_bucket_stack.bucket.bucket_arn
-        )
     else:
         curated_bucket_stack = S3BucketStack(
             app, "curated-bucket", bucket_name=curated_bucket_name, 
@@ -147,12 +131,6 @@ if __name__ == "__main__":
             s3.EventType.OBJECT_CREATED,
             s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
             s3.NotificationKeyFilter(prefix="claims/type=structured/", suffix=".parquet")
-        )
-
-        meta_lambda_stack.meta_lambda.add_permission(
-            "allow-invoke-from-s3-curated",
-            principal=iam.ServicePrincipal("s3.amazonaws.com"),
-            source_arn=curated_bucket_stack.bucket.bucket_arn
         )
 
     if bucket_exists(application_bucket_name):
@@ -166,11 +144,6 @@ if __name__ == "__main__":
             s3.NotificationKeyFilter(prefix="claims/model/fact/", suffix=".parquet")
         )
 
-        meta_lambda_stack.meta_lambda.add_permission(
-            "allow-invoke-from-s3-application",
-            principal=iam.ServicePrincipal("s3.amazonaws.com"),
-            source_arn=application_bucket_stack.bucket.bucket_arn
-        )
     else:
         application_bucket_stack = S3BucketStack(
             app, "application-bucket", bucket_name=application_bucket_name, 
@@ -181,12 +154,6 @@ if __name__ == "__main__":
             s3.EventType.OBJECT_CREATED,
             s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
             s3.NotificationKeyFilter(prefix="claims/model/fact/", suffix=".parquet")
-        )
-        
-        meta_lambda_stack.meta_lambda.add_permission(
-            "allow-invoke-from-s3-application",
-            principal=iam.ServicePrincipal("s3.amazonaws.com"),
-            source_arn=application_bucket_stack.bucket.bucket_arn
         )
 
     
