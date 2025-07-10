@@ -63,8 +63,8 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
       
-      - name: Destroy Bucket Event Stacks
-        run: cdk destroy application-bucket curated-bucket stage-bucket --force
+      - name: Clean Stacks
+        run: cdk destroy --all --force
 
       - name: CDK Bootstrap
         run: cdk bootstrap

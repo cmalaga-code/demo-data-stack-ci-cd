@@ -95,14 +95,9 @@ if __name__ == "__main__":
     else:
         stage_bucket_stack = S3BucketStack(
             app, "stage-bucket", bucket_name=stage_bucket_name, 
-            env_name=deployment_env
+            env_name=deployment_env, event_fn=meta_lambda_stack.meta_lambda, 
+            event_prefix="claims/type=structured/", event_suffix=".csv"
         )
-
-        stage_bucket_stack.bucket.add_event_notification(
-            s3.EventType.OBJECT_CREATED,
-            s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-            s3.NotificationKeyFilter(prefix="claims/type=structured/", suffix=".csv")
-        )        
 
     if bucket_exists(curated_bucket_name):
         curated_bucket_stack = ImportedBucketStack(
@@ -112,13 +107,8 @@ if __name__ == "__main__":
     else:
         curated_bucket_stack = S3BucketStack(
             app, "curated-bucket", bucket_name=curated_bucket_name, 
-            env_name=deployment_env
-        )
-    
-        curated_bucket_stack.bucket.add_event_notification(
-            s3.EventType.OBJECT_CREATED,
-            s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-            s3.NotificationKeyFilter(prefix="claims/type=structured/", suffix=".parquet")
+            env_name=deployment_env, event_fn=meta_lambda_stack.meta_lambda, 
+            event_prefix="claims/type=structured/", event_suffix=".parquet"
         )
 
     if bucket_exists(application_bucket_name):
@@ -129,15 +119,9 @@ if __name__ == "__main__":
     else:
         application_bucket_stack = S3BucketStack(
             app, "application-bucket", bucket_name=application_bucket_name, 
-            env_name=deployment_env
+            env_name=deployment_env, event_fn=meta_lambda_stack.meta_lambda, 
+            event_prefix="claims/model/fact/", event_suffix=".parquet"
         )
-
-        application_bucket_stack.bucket.add_event_notification(
-            s3.EventType.OBJECT_CREATED,
-            s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-            s3.NotificationKeyFilter(prefix="claims/model/fact/", suffix=".parquet")
-        )
-
     
     # Synthesize app (executes code and generates CloudFormation Template in JSON format)
     app.synth() # executing code and the apis create a file with the proper CloudFormation template cdk.out
