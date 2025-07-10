@@ -92,12 +92,6 @@ if __name__ == "__main__":
             app, "imported-stage-bucket", bucket_name=stage_bucket_name
         )
 
-        stage_bucket_stack.bucket.add_event_notification(
-            s3.EventType.OBJECT_CREATED,
-            s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-            s3.NotificationKeyFilter(prefix="claims/type=structured/", suffix=".csv")
-        )
-
     else:
         stage_bucket_stack = S3BucketStack(
             app, "stage-bucket", bucket_name=stage_bucket_name, 
@@ -115,12 +109,6 @@ if __name__ == "__main__":
             app, "imported-curated-bucket", bucket_name=curated_bucket_name
         )
 
-        curated_bucket_stack.bucket.add_event_notification(
-            s3.EventType.OBJECT_CREATED,
-            s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-            s3.NotificationKeyFilter(prefix="claims/type=structured/", suffix=".parquet")
-        )
-
     else:
         curated_bucket_stack = S3BucketStack(
             app, "curated-bucket", bucket_name=curated_bucket_name, 
@@ -136,12 +124,6 @@ if __name__ == "__main__":
     if bucket_exists(application_bucket_name):
         application_bucket_stack = ImportedBucketStack(
             app, "imported-application-bucket", bucket_name=application_bucket_name
-        )
-
-        application_bucket_stack.bucket.add_event_notification(
-            s3.EventType.OBJECT_CREATED,
-            s3n.LambdaDestination(meta_lambda_stack.meta_lambda),
-            s3.NotificationKeyFilter(prefix="claims/model/fact/", suffix=".parquet")
         )
 
     else:
