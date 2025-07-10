@@ -27,7 +27,7 @@ class OrchestrationStack(Stack):
         super().__init__(scope, id, **kwargs)
 
          # file size threshold 2GB
-        SIZE_THRESHOLD = 2 * 1024 * 1024 * 1024
+        SIZE_THRESHOLD = 2000
 
         # sucess defined
         success = sfn.Succeed(self, "Done")
