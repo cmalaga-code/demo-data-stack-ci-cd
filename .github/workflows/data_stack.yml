@@ -71,7 +71,10 @@ jobs:
       
       - name: Destroy Bucket Event Stacks
         run: cdk destroy application-bucket curated-bucket stage-bucket --force
-        
+
+      - name: Destroy Lambda Event Stacks
+        run: cdk destroy meta-lambda-stack --force
+
       - name: CDK Deploy
         run: cdk deploy --all --require-approval never --ci
   snowflake-deploy:
