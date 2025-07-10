@@ -15,7 +15,7 @@
       "responseElements": {
         "x-amz-request-id": "ABC123456789",
         "x-amz-id-2": "abcde+XYZ=="
-      },
+      }, 
       "s3": {
         "s3SchemaVersion": "1.0",
         "configurationId": "manual-test",
