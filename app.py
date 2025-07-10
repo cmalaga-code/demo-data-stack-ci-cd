@@ -1,6 +1,6 @@
 import os
 import boto3
-from aws_cdk import App, aws_s3 as s3, RemovalPolicy
+from aws_cdk import App, aws_s3 as s3, RemovalPolicy, Stack
 from botocore.exceptions import ClientError
 
 from orchestration_stack.step_function_construct import OrchestrationStack
@@ -74,11 +74,13 @@ orchestration_stack = OrchestrationStack(
 )
 
 #  Create all three buckets
+bucket_stack = Stack(app, "BucketProvisioningStack")
+
 if bucket_exists(os.environ["STAGE_BUCKET"]):
     stage_bucket = s3.Bucket.from_bucket_name(app, "ImportedStageBucket", os.environ["STAGE_BUCKET"])
 else:
     stage_bucket = s3.Bucket(
-        app, "StageBucket",
+        bucket_stack, "StageBucket",
         bucket_name=os.environ["STAGE_BUCKET"],
         versioned=True,
         removal_policy=RemovalPolicy.DESTROY if is_dev else RemovalPolicy.RETAIN,
@@ -88,7 +90,7 @@ if bucket_exists(os.environ["CURATED_BUCKET"]):
     curated_bucket = s3.Bucket.from_bucket_name(app, "ImportedCuratedBucket", os.environ["CURATED_BUCKET"])
 else:
     curated_bucket = s3.Bucket(
-        app, "CuratedBucket",
+        bucket_stack, "CuratedBucket",
         bucket_name=os.environ["CURATED_BUCKET"],
         versioned=True,
         removal_policy=RemovalPolicy.DESTROY if is_dev else RemovalPolicy.RETAIN,
@@ -99,7 +101,7 @@ if bucket_exists(os.environ["APPLICATION_BUCKET"]):
    application_bucket = s3.Bucket.from_bucket_name(app, "ImportedApplicationBucket", os.environ["APPLICATION_BUCKET"])
 else:
     application_bucket = s3.Bucket(
-        app, "ApplicationBucket",
+        bucket_stack, "ApplicationBucket",
         bucket_name=os.environ["APPLICATION_BUCKET"],
         versioned=True,
         removal_policy=RemovalPolicy.DESTROY if is_dev else RemovalPolicy.RETAIN,
