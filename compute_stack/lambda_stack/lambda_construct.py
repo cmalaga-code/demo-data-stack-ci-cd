@@ -8,46 +8,6 @@ from aws_cdk import (
 )
 from constructs import Construct
 
-class MetaLambdaStack(Stack):
-    def __init__(self, scope: Construct, id: str, orchestration_stack, **kwargs) -> None:
-        super().__init__(scope, id, **kwargs)
-
-        lambda_role = iam.Role(
-            self, "meta-lambda-exection-role",
-            assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
-            managed_policies=[
-                iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaBasicExecutionRole")
-            ]
-        )
-
-        lambda_role.add_to_policy(
-            iam.PolicyStatement.from_json({
-                "Effect": "Allow",
-                "Action": [
-                    "s3:GetObject",
-                    "states:StartExecution"
-                ],
-                "Resource": [
-                    f"arn:aws:s3:::{os.environ['STAGE_BUCKET']}/*",
-                    f"arn:aws:s3:::{os.environ['CURATED_BUCKET']}/*",
-                    f"arn:aws:s3:::{os.environ['APPLICATION_BUCKET']}/*",
-                    orchestration_stack.state_machine.state_machine_arn
-                ]
-            })
-        )
-
-
-        self.meta_lambda = _lambda.DockerImageFunction(
-            self, "meta-lambda-function",
-            code=_lambda.DockerImageCode.from_image_asset("src/_lambda_/process_meta_data"),
-            timeout=Duration.seconds(180),
-            memory_size=2048, # MB -- 2GB
-            description="Triggered by S3 to extract metadata and start Step Function",
-            environment={
-                "STATE_MACHINE_ARN": orchestration_stack.state_machine.state_machine_arn
-            },
-            role=lambda_role
-        )
 
 class StructuredCurateDataLambdaStack(Stack):
     def __init__(self, scope: Construct, id: str, **kwargs) -> None:

@@ -1,10 +1,8 @@
 import os
 import boto3
-from aws_cdk import App, aws_s3 as s3, aws_s3_notifications as s3n, aws_iam as iam
+from aws_cdk import App
 from botocore.exceptions import ClientError
 
-from notification_stack.notification import NotificationManagerStack
-from data_lake_stack.buckets import S3BucketStack, ImportedBucketStack
 from orchestration_stack.step_function_construct import OrchestrationStack
 from compute_stack.lambda_stack.lambda_construct import (
     StructuredCurateDataLambdaStack,
@@ -12,8 +10,8 @@ from compute_stack.lambda_stack.lambda_construct import (
     SemiStructuredCurateDataLambdaStack,
     UnStructuredCurateDataLambdaStack,
     UnStructuredApplicationDataLambdaStack,
-    MetaLambdaStack,
-    SnowflakeModelLambdaStack
+    SnowflakeModelLambdaStack,
+    MetaLambdaStack
 )
 from compute_stack.glue_stack.glue_construct import (
     StructuredCurateDataGlueStack,
@@ -22,6 +20,11 @@ from compute_stack.glue_stack.glue_construct import (
     UnStructuredCurateDataGlueStack,
     UnStructuredApplicationDataGlueStack
 )
+
+def check_env_vars(required_vars):
+    missing = [var for var in required_vars if not os.environ.get(var)]
+    if missing:
+        raise ValueError(f"Missing required environment variables: {', '.join(missing)}")
 
 def bucket_exists(bucket_name: str) -> bool:
     s3_client = boto3.client("s3")
@@ -33,105 +36,47 @@ def bucket_exists(bucket_name: str) -> bool:
         if error_code == "404":
             return False
         raise
-    
 
-if __name__ == "__main__":
-    app = App()
+# 🔧 App entry point
+app = App()
 
-    # check if env variables are present
+# 🧪 Ensure required env vars are set
+check_env_vars(["STAGE_BUCKET", "CURATED_BUCKET", "APPLICATION_BUCKET", "ENV"])
+deployment_env = os.environ["ENV"]
 
-    required_vars = ["STAGE_BUCKET", "CURATED_BUCKET", "APPLICATION_BUCKET", "ENV"]
-    missing = [var for var in required_vars if not os.environ.get(var)]
-    if missing:
-        raise ValueError(f"Missing required environment variables: {', '.join(missing)}")
+# 🧠 Lambda stacks
+structured_curated_lambda_stack = StructuredCurateDataLambdaStack(app, "structured-curated-lambda-stack")
+structured_application_lambda_stack = StructuredApplicationDataLambdaStack(app, "structured-application-lambda-stack")
+semi_structured_curated_lambda_stack = SemiStructuredCurateDataLambdaStack(app, "semi-structured-curated-lambda-stack")
+unstructured_curated_lambda_stack = UnStructuredCurateDataLambdaStack(app, "unstructured-curated-lambda-stack")
+unstructured_application_lambda_stack = UnStructuredApplicationDataLambdaStack(app, "unstructured-application-lambda-stack")
+snowflake_model_claims_lambda_stack = SnowflakeModelLambdaStack(app, "snowflake-model-claims-lambda-stack")
 
-    # compute 
+# 🧠 Glue stacks
+structured_curated_glue_stack = StructuredCurateDataGlueStack(app, "structured-curated-glue-stack")
+structured_application_glue_stack = StructuredApplicationDataGlueStack(app, "structured-application-glue-stack")
+semi_structured_curated_glue_stack = SemiStructuredCurateDataGlueStack(app, "semi-structured-curated-glue-stack")
+unstructured_curated_glue_stack = UnStructuredCurateDataGlueStack(app, "unstructured-curated-glue-stack")
+unstructured_application_glue_stack = UnStructuredApplicationDataGlueStack(app, "unstructured-application-glue-stack")
 
-    structured_curated_lambda_stack = StructuredCurateDataLambdaStack(app, "structured-curated-lambda-stack")
-    structured_application_lambda_stack = StructuredApplicationDataLambdaStack(app, "structured-application-lambda-stack")
-    semi_structured_curated_lambda_stack = SemiStructuredCurateDataLambdaStack(app, "semi-structured-curated-lambda-stack")
-    unstructured_curated_lambda_stack = UnStructuredCurateDataLambdaStack(app, "unstructured-curated-lambda-stack")
-    unstructured_application_lambda_stack = UnStructuredApplicationDataLambdaStack(app, "unstructured-application-lambda-stack")
-    snowflake_model_claims_lambda_stack = SnowflakeModelLambdaStack(app, "snowflake-model-claims-lambda-stack")
+# 🚦 Orchestration stack
+orchestration_stack = OrchestrationStack(
+    app, "data-stack-orchestration",
+    structured_curated_lambda_stack.fn,
+    structured_application_lambda_stack.fn,
+    semi_structured_curated_lambda_stack.fn,
+    unstructured_curated_lambda_stack.fn,
+    unstructured_application_lambda_stack.fn,
+    structured_curated_glue_stack.glue_job.name,
+    structured_application_glue_stack.glue_job.name,
+    semi_structured_curated_glue_stack.glue_job.name,
+    unstructured_curated_glue_stack.glue_job.name,
+    unstructured_application_glue_stack.glue_job.name,
+    snowflake_model_claims_lambda_stack.fn
+)
 
-    
-    structured_curated_glue_stack = StructuredCurateDataGlueStack(app, "structured-curated-glue-stack")
-    structured_application_glue_stack = StructuredApplicationDataGlueStack(app, "structured-application-glue-stack")
-    semi_structured_curated_glue_stack = SemiStructuredCurateDataGlueStack(app, "semi-structured-curated-glue-stack")
-    unstructured_curated_glue_stack = UnStructuredCurateDataGlueStack(app, "unstructured-curated-glue-stack")
-    unstructured_application_glue_stack = UnStructuredApplicationDataGlueStack(app, "unstructured-application-glue-stack")
+# 📦 Finalized Lambda + buckets + event notification
+meta_lambda_stack = MetaLambdaStack(app, "meta-lambda-stack", orchestration_stack, env_name=deployment_env)
 
-    # event orchestration
-
-    orchestration_stack = OrchestrationStack(
-        app, "data-stack-orchestration", 
-        structured_curated_lambda_stack.fn, 
-        structured_application_lambda_stack.fn,
-        semi_structured_curated_lambda_stack.fn,
-        unstructured_curated_lambda_stack.fn,
-        unstructured_application_lambda_stack.fn,
-        structured_curated_glue_stack.glue_job.name,
-        structured_application_glue_stack.glue_job.name,
-        semi_structured_curated_glue_stack.glue_job.name,
-        unstructured_curated_glue_stack.glue_job.name,
-        unstructured_application_glue_stack.glue_job.name,
-        snowflake_model_claims_lambda_stack.fn
-    )
-
-
-    meta_lambda_stack = MetaLambdaStack(app, "meta-lambda-stack", orchestration_stack)
-
-    # data lake stack
-
-    stage_bucket_name = os.environ["STAGE_BUCKET"]
-    curated_bucket_name = os.environ["CURATED_BUCKET"]
-    application_bucket_name = os.environ["APPLICATION_BUCKET"]
-    deployment_env = os.environ["ENV"]
-
-    if bucket_exists(stage_bucket_name):
-        stage_bucket_stack = ImportedBucketStack(
-            app, "imported-stage-bucket", bucket_name=stage_bucket_name
-        )
-
-    else:
-        stage_bucket_stack = S3BucketStack(
-            app, "stage-bucket", bucket_name=stage_bucket_name, 
-            env_name=deployment_env
-        )
-
-    if bucket_exists(curated_bucket_name):
-        curated_bucket_stack = ImportedBucketStack(
-            app, "imported-curated-bucket", bucket_name=curated_bucket_name
-        )
-
-    else:
-        curated_bucket_stack = S3BucketStack(
-            app, "curated-bucket", bucket_name=curated_bucket_name, 
-            env_name=deployment_env
-        )
-
-    if bucket_exists(application_bucket_name):
-        application_bucket_stack = ImportedBucketStack(
-            app, "imported-application-bucket", bucket_name=application_bucket_name
-        )
-
-    else:
-        application_bucket_stack = S3BucketStack(
-            app, "application-bucket", bucket_name=application_bucket_name, 
-            env_name=deployment_env
-        )
-
-    # notification_stack = NotificationManagerStack(
-    #     app, "bucket-notification-stack",
-    #     bucket_refs={
-    #         "stage": stage_bucket_stack.bucket,
-    #         "curated": curated_bucket_stack.bucket,
-    #         "application": application_bucket_stack.bucket
-    #     },
-    #     lambda_fn=meta_lambda_stack.meta_lambda
-    # )
-
-    
-    # Synthesize app (executes code and generates CloudFormation Template in JSON format)
-    app.synth() # executing code and the apis create a file with the proper CloudFormation template cdk.out
-
+# 📤 Synthesize to generate CloudFormation templates
+app.synth()
