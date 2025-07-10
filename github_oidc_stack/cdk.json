@@ -1,6 +1,6 @@
 {
     "app": "python3 ./oidc_construct.py",
-    "context": {
+    "context": { 
         "repoName": "cmalaga-code/demo-data-stack-ci-cd"
     }
 }
