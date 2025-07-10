@@ -62,18 +62,15 @@ jobs:
 
       - name: Install dependencies
         run: pip install -r requirements.txt
+      
+      - name: Destroy Bucket Event Stacks
+        run: cdk destroy application-bucket curated-bucket stage-bucket --force
 
       - name: CDK Bootstrap
         run: cdk bootstrap
 
       - name: CDK Diff
         run: cdk diff || true  # Prevents failure if there are changes
-      
-      - name: Destroy Bucket Event Stacks
-        run: cdk destroy application-bucket curated-bucket stage-bucket --force
-
-      - name: Destroy Lambda Event Stacks
-        run: cdk destroy meta-lambda-stack --force
 
       - name: CDK Deploy
         run: cdk deploy --all --require-approval never --ci
