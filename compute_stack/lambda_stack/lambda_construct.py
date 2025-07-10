@@ -21,19 +21,21 @@ class MetaLambdaStack(Stack):
         )
 
         lambda_role.add_to_policy(
-            iam.PolicyStatement.from_json(
-                actions=[
+            iam.PolicyStatement.from_json({
+                "Effect": "Allow",
+                "Action": [
                     "s3:GetObject",
                     "states:StartExecution"
                 ],
-                resources=[
+                "Resource": [
                     f"arn:aws:s3:::{os.environ['STAGE_BUCKET']}/*",
                     f"arn:aws:s3:::{os.environ['CURATED_BUCKET']}/*",
                     f"arn:aws:s3:::{os.environ['APPLICATION_BUCKET']}/*",
                     orchestration_stack.state_machine.state_machine_arn
                 ]
-            )
+            })
         )
+
 
         self.meta_lambda = _lambda.DockerImageFunction(
             self, "meta-lambda-function",
@@ -60,26 +62,30 @@ class StructuredCurateDataLambdaStack(Stack):
         )
 
         lambda_role.add_to_policy(
-            iam.PolicyStatement.from_json(
-                actions=[
-                    "s3:GetObject",
+        iam.PolicyStatement.from_json({
+                "Effect": "Allow",
+                "Action": [
+                    "s3:GetObject"
                 ],
-                resources=[
+                "Resource": [
                     f"arn:aws:s3:::{os.environ['STAGE_BUCKET']}/*"
                 ]
-            )
+            })
         )
 
+
         lambda_role.add_to_policy(
-            iam.PolicyStatement.from_json(
-                actions=[
+            iam.PolicyStatement.from_json({
+                "Effect": "Allow",
+                "Action": [
                     "s3:PutObject"
                 ],
-                resources=[
+                "Resource": [
                     f"arn:aws:s3:::{os.environ['CURATED_BUCKET']}/*"
                 ]
-            )
+            })
         )
+
 
         self.fn = _lambda.DockerImageFunction(
             self, "structured-curate-lambda",
@@ -103,26 +109,29 @@ class StructuredApplicationDataLambdaStack(Stack):
         )
 
         lambda_role.add_to_policy(
-            iam.PolicyStatement.from_json(
-                actions=[
-                    "s3:GetObject",
+            iam.PolicyStatement.from_json({
+                "Effect": "Allow",
+                "Action": [
+                    "s3:GetObject"
                 ],
-                resources=[
+                "Resource": [
                     f"arn:aws:s3:::{os.environ['CURATED_BUCKET']}/*"
                 ]
-            )
+            })
         )
 
         lambda_role.add_to_policy(
-            iam.PolicyStatement.from_json(
-                actions=[
+            iam.PolicyStatement.from_json({
+                "Effect": "Allow",
+                "Action": [
                     "s3:PutObject"
                 ],
-                resources=[
+                "Resource": [
                     f"arn:aws:s3:::{os.environ['APPLICATION_BUCKET']}/*"
                 ]
-            )
+            })
         )
+
 
         self.fn = _lambda.DockerImageFunction(
             self, "structured-application-lambda",
@@ -146,26 +155,29 @@ class SemiStructuredCurateDataLambdaStack(Stack):
         )
 
         lambda_role.add_to_policy(
-            iam.PolicyStatement(
-                actions=[
-                    "s3:GetObject",
+            iam.PolicyStatement.from_json({
+                "Effect": "Allow",
+                "Action": [
+                    "s3:GetObject"
                 ],
-                resources=[
+                "Resource": [
                     f"arn:aws:s3:::{os.environ['STAGE_BUCKET']}/*"
                 ]
-            )
+            })
         )
 
         lambda_role.add_to_policy(
-            iam.PolicyStatement.from_json(
-                actions=[
+            iam.PolicyStatement.from_json({
+                "Effect": "Allow",
+                "Action": [
                     "s3:PutObject"
                 ],
-                resources=[
+                "Resource": [
                     f"arn:aws:s3:::{os.environ['CURATED_BUCKET']}/*"
                 ]
-            )
+            })
         )
+
 
         self.fn = _lambda.DockerImageFunction(
             self, "semi-structured-curate-lambda",
@@ -190,26 +202,29 @@ class UnStructuredCurateDataLambdaStack(Stack):
         )
 
         lambda_role.add_to_policy(
-            iam.PolicyStatement.from_json(
-                actions=[
-                    "s3:GetObject",
+            iam.PolicyStatement.from_json({
+                "Effect": "Allow",
+                "Action": [
+                    "s3:GetObject"
                 ],
-                resources=[
+                "Resource": [
                     f"arn:aws:s3:::{os.environ['STAGE_BUCKET']}/*"
                 ]
-            )
+            })
         )
 
         lambda_role.add_to_policy(
-            iam.PolicyStatement.from_json(
-                actions=[
+            iam.PolicyStatement.from_json({
+                "Effect": "Allow",
+                "Action": [
                     "s3:PutObject"
                 ],
-                resources=[
+                "Resource": [
                     f"arn:aws:s3:::{os.environ['CURATED_BUCKET']}/*"
                 ]
-            )
+            })
         )
+
 
 
         self.fn = _lambda.DockerImageFunction(
@@ -234,26 +249,30 @@ class UnStructuredApplicationDataLambdaStack(Stack):
         )
 
         lambda_role.add_to_policy(
-            iam.PolicyStatement.from_json(
-                actions=[
-                    "s3:GetObject",
+            iam.PolicyStatement.from_json({
+                "Effect": "Allow",
+                "Action": [
+                    "s3:GetObject"
                 ],
-                resources=[
+                "Resource": [
                     f"arn:aws:s3:::{os.environ['CURATED_BUCKET']}/*"
                 ]
-            )
+            })
         )
 
+
         lambda_role.add_to_policy(
-            iam.PolicyStatement.from_json(
-                actions=[
+            iam.PolicyStatement.from_json({
+                "Effect": "Allow",
+                "Action": [
                     "s3:PutObject"
                 ],
-                resources=[
+                "Resource": [
                     f"arn:aws:s3:::{os.environ['APPLICATION_BUCKET']}/*"
                 ]
-            )
+            })
         )
+
 
         self.fn = _lambda.DockerImageFunction(
             self, "unstructured-application-lambda",
@@ -277,15 +296,17 @@ class SnowflakeModelLambdaStack(Stack):
         )
 
         lambda_role.add_to_policy(
-            iam.PolicyStatement.from_json(
-                actions=[
-                    "s3:GetObject",
+            iam.PolicyStatement.from_json({
+                "Effect": "Allow",
+                "Action": [
+                    "s3:GetObject"
                 ],
-                resources=[
+                "Resource": [
                     f"arn:aws:s3:::{os.environ['APPLICATION_BUCKET']}/*"
                 ]
-            )
+            })
         )
+
 
         self.fn = _lambda.DockerImageFunction(
             self, "snowflake-lambda-application-lambda",
