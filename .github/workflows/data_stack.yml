@@ -71,6 +71,9 @@ jobs:
       
       - name: Destroy Event Trigger (safe with retained S3)
         run: |
+          cdk destroy imported-application-bucket --force
+          cdk destroy imported-curated-bucket --force
+          cdk destroy imported-stage-bucket --force
           cdk destroy application-bucket --force
           cdk destroy curated-bucket --force
           cdk destroy stage-bucket --force
