@@ -1,4 +1,6 @@
-from aws_cdk import Stack, aws_s3 as s3, aws_notifications as s3n, aws_iam as iam
+from aws_cdk import Stack, aws_s3 as s3, aws_iam as iam
+from aws_cdk import aws_s3_notifications as s3n
+
 
 class NotificationManagerStack(Stack):
     def __init__(self, scope, id, bucket_refs, lambda_fn, **kwargs):
