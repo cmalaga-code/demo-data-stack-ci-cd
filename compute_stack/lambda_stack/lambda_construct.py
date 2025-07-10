@@ -21,7 +21,7 @@ class MetaLambdaStack(Stack):
         )
 
         lambda_role.add_to_policy(
-            iam.PolicyStatement(
+            iam.PolicyStatement.from_json(
                 actions=[
                     "s3:GetObject",
                     "states:StartExecution"
@@ -60,7 +60,7 @@ class StructuredCurateDataLambdaStack(Stack):
         )
 
         lambda_role.add_to_policy(
-            iam.PolicyStatement(
+            iam.PolicyStatement.from_json(
                 actions=[
                     "s3:GetObject",
                 ],
@@ -71,7 +71,7 @@ class StructuredCurateDataLambdaStack(Stack):
         )
 
         lambda_role.add_to_policy(
-            iam.PolicyStatement(
+            iam.PolicyStatement.from_json(
                 actions=[
                     "s3:PutObject"
                 ],
@@ -103,7 +103,7 @@ class StructuredApplicationDataLambdaStack(Stack):
         )
 
         lambda_role.add_to_policy(
-            iam.PolicyStatement(
+            iam.PolicyStatement.from_json(
                 actions=[
                     "s3:GetObject",
                 ],
@@ -114,7 +114,7 @@ class StructuredApplicationDataLambdaStack(Stack):
         )
 
         lambda_role.add_to_policy(
-            iam.PolicyStatement(
+            iam.PolicyStatement.from_json(
                 actions=[
                     "s3:PutObject"
                 ],
@@ -157,7 +157,7 @@ class SemiStructuredCurateDataLambdaStack(Stack):
         )
 
         lambda_role.add_to_policy(
-            iam.PolicyStatement(
+            iam.PolicyStatement.from_json(
                 actions=[
                     "s3:PutObject"
                 ],
@@ -190,7 +190,7 @@ class UnStructuredCurateDataLambdaStack(Stack):
         )
 
         lambda_role.add_to_policy(
-            iam.PolicyStatement(
+            iam.PolicyStatement.from_json(
                 actions=[
                     "s3:GetObject",
                 ],
@@ -201,7 +201,7 @@ class UnStructuredCurateDataLambdaStack(Stack):
         )
 
         lambda_role.add_to_policy(
-            iam.PolicyStatement(
+            iam.PolicyStatement.from_json(
                 actions=[
                     "s3:PutObject"
                 ],
@@ -234,7 +234,7 @@ class UnStructuredApplicationDataLambdaStack(Stack):
         )
 
         lambda_role.add_to_policy(
-            iam.PolicyStatement(
+            iam.PolicyStatement.from_json(
                 actions=[
                     "s3:GetObject",
                 ],
@@ -245,7 +245,7 @@ class UnStructuredApplicationDataLambdaStack(Stack):
         )
 
         lambda_role.add_to_policy(
-            iam.PolicyStatement(
+            iam.PolicyStatement.from_json(
                 actions=[
                     "s3:PutObject"
                 ],
@@ -277,7 +277,7 @@ class SnowflakeModelLambdaStack(Stack):
         )
 
         lambda_role.add_to_policy(
-            iam.PolicyStatement(
+            iam.PolicyStatement.from_json(
                 actions=[
                     "s3:GetObject",
                 ],
