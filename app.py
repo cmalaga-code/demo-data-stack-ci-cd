@@ -121,15 +121,15 @@ if __name__ == "__main__":
             env_name=deployment_env
         )
 
-    notification_stack = NotificationManagerStack(
-        app, "bucket-notification-stack",
-        bucket_refs={
-            "stage": stage_bucket_stack.bucket,
-            "curated": curated_bucket_stack.bucket,
-            "application": application_bucket_stack.bucket
-        },
-        lambda_fn=meta_lambda_stack.meta_lambda
-    )
+    # notification_stack = NotificationManagerStack(
+    #     app, "bucket-notification-stack",
+    #     bucket_refs={
+    #         "stage": stage_bucket_stack.bucket,
+    #         "curated": curated_bucket_stack.bucket,
+    #         "application": application_bucket_stack.bucket
+    #     },
+    #     lambda_fn=meta_lambda_stack.meta_lambda
+    # )
 
     
     # Synthesize app (executes code and generates CloudFormation Template in JSON format)
