@@ -1,4 +1,4 @@
-name: Deploy Data Stack
+name: ${GITHUB_REF##*/} Deploy Data Stack
 
 on:
   push:

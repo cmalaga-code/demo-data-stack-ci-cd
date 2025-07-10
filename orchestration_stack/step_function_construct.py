@@ -160,92 +160,188 @@ class OrchestrationStack(Stack):
             sfn.Fail(self, "job-unstructured-application-glue-task-failed", error="job-unstructured-application-glue-task-error", cause="failed")
         )
         # define choice per size
-        size_bucket_structure_choice = Choice(self, "Check File Size, Bucket and Structure")
+        file_size_choice = Choice(self, "Check File Size")
 
-        size_bucket_structure_choice.when(
-            Condition.and_(
-                Condition.number_less_than("$.fileSize", SIZE_THRESHOLD),
-                Condition.string_matches("$.bucketNameLower", "*stage*"),
-                Condition.string_matches("$.objectKey", "*type=structured*")
-            ),
-            structured_curated_lambda_fn_task.next(success)
+        bucket_choice = Choice(self, "Check Bucket")
+        bucket_big_data_choice = Choice(self, "Check Bucket Big Data")
+
+        data_format_stage = Choice(self, "Data Format Stage")
+        data_format_stage_big_data = Choice(self, "Data Format Stage Big Data")
+
+        data_format_curated = Choice(self, "Data Format Curated")
+        data_format_curated_big_data = Choice(self, "Data Format Curated Big Data")
+
+    
+        check_task_success = Choice(self, "Check Task Success")
+
+        success = sfn.Succeed(self, "Success")
+        failure = sfn.Fail(self, "Failure", error="JobFailed", cause="Downstream task failed")
+
+        file_size_choice.when(
+            Condition.number_less_than("$.fileSize", SIZE_THRESHOLD),
+            bucket_choice
+        ).otherwise(
+            bucket_big_data_choice
+        )
+
+        bucket_choice.when(
+            Condition.string_matches("$.bucketNameLower", "*stage*"),
+            data_format_stage
         ).when(
-            Condition.and_(
-                Condition.number_greater_than("$.fileSize", SIZE_THRESHOLD),
-                Condition.string_matches("$.bucketNameLower", "*stage*"),
-                Condition.string_matches("$.objectKey", "*type=structured*")
-            ),
-            structured_curated_glue_task.next(success)
+            Condition.string_matches("$.bucketNameLower", "*curated*"),
+            data_format_curated
         ).when(
-            Condition.and_(
-                Condition.number_less_than("$.fileSize", SIZE_THRESHOLD),
-                Condition.string_matches("$.bucketNameLower", "*curated*"),
-                Condition.string_matches("$.objectKey", "*type=structured*")
-            ),
-            structured_application_lambda_fn_task.next(success)
-        ).when(
-            Condition.and_(
-                Condition.number_greater_than("$.fileSize", SIZE_THRESHOLD),
-                Condition.string_matches("$.bucketNameLower", "*curated*"),
-                Condition.string_matches("$.objectKey", "*type=structured*")
-            ),
-            structured_application_glue_task.next(success)
-        ).when(
-            Condition.and_(
-                Condition.number_less_than("$.fileSize", SIZE_THRESHOLD),
-                Condition.string_matches("$.bucketNameLower", "*stage*"),
-                Condition.string_matches("$.objectKey", "*type=semi-structured*")
-            ),
-            semi_structured_curated_lambda_fn_task.next(success)
-        ).when(
-            Condition.and_(
-                Condition.number_greater_than("$.fileSize", SIZE_THRESHOLD),
-                Condition.string_matches("$.bucketNameLower", "*stage*"),
-                Condition.string_matches("$.objectKey", "*type=semi-structured*")
-            ),
-            semi_structured_curated_glue_task.next(success)
-        ).when(
-            Condition.and_(
-                Condition.number_less_than("$.fileSize", SIZE_THRESHOLD),
-                Condition.string_matches("$.bucketNameLower", "*stage*"),
-                Condition.string_matches("$.objectKey", "*type=unstructured*")
-            ),
-            unstructured_curated_lambda_fn_task.next(success)
-        ).when(
-            Condition.and_(
-                Condition.number_greater_than("$.fileSize", SIZE_THRESHOLD),
-                Condition.string_matches("$.bucketNameLower", "*stage*"),
-                Condition.string_matches("$.objectKey", "*type=unstructured*")
-            ),
-            unstructured_curated_glue_task.next(success)
-        ).when(
-            Condition.and_(
-                Condition.number_less_than("$.fileSize", SIZE_THRESHOLD),
-                Condition.string_matches("$.bucketNameLower", "*curated*"),
-                Condition.string_matches("$.objectKey", "*type=unstructured*")
-            ),
-            unstructured_application_lambda_fn_task.next(success)
-        ).when(
-            Condition.and_(
-                Condition.number_greater_than("$.fileSize", SIZE_THRESHOLD),
-                Condition.string_matches("$.bucketNameLower", "*curated*"),
-                Condition.string_matches("$.objectKey", "*type=unstructured*")
-            ),
-            unstructured_application_glue_task.next(success)
-        ).when(
-            Condition.and_(
-                Condition.number_greater_than("$.fileSize", SIZE_THRESHOLD),
-                Condition.string_matches("$.bucketNameLower", "*application*"),
-                Condition.string_matches("$.objectKey", "*model/fact*")
-            ),
+            Condition.string_matches("$.bucketNameLower", "*application*"),
             snowflake_model_claims_fact_fn_task.next(success)
+        ).otherwise(failure)
+
+        bucket_big_data_choice.when(
+            Condition.string_matches("$.bucketNameLower", "*stage*"),
+            data_format_stage_big_data
+        ).when(
+            Condition.string_matches("$.bucketNameLower", "*curated*"),
+            data_format_curated_big_data
+        ).when(
+            Condition.string_matches("$.bucketNameLower", "*application*"),
+            snowflake_model_claims_fact_fn_task.next(success)
+        ).otherwise(failure)
+
+        data_format_stage.when(
+            Condition.string_matches("$.objectKey", "*type=structured/*"),
+            structured_curated_lambda_fn_task.next(check_task_success)
+        ).when(
+            Condition.string_matches("$.objectKey", "*type=semi-structured/*"),
+            semi_structured_curated_lambda_fn_task.next(check_task_success)
+        ).when(
+            Condition.string_matches("$.objectKey", "*type=unstructured/*"),
+            unstructured_curated_lambda_fn_task.next(check_task_success)
+        ).otherwise(failure)
+
+        data_format_stage_big_data.when(
+            Condition.string_matches("$.objectKey", "*type=structured/*"),
+            structured_curated_glue_task.next(check_task_success)
+        ).when(
+            Condition.string_matches("$.objectKey", "*type=semi-structured/*"),
+            semi_structured_curated_glue_task.next(check_task_success)
+        ).when(
+            Condition.string_matches("$.objectKey", "*type=unstructured/*"),
+            unstructured_curated_glue_task.next(check_task_success)
+        ).otherwise(failure)
+
+        data_format_curated.when(
+            Condition.string_matches("$.objectKey", "*type=structured/*"),
+            structured_application_lambda_fn_task.next(check_task_success)
+        ).when(
+            Condition.string_matches("$.objectKey", "*type=unstructured/*"),
+            unstructured_application_lambda_fn_task.next(check_task_success)
+        ).otherwise(failure)
+
+        data_format_curated_big_data.when(
+            Condition.string_matches("$.objectKey", "*type=structured/*"),
+            structured_application_glue_task.next(check_task_success)
+        ).when(
+            Condition.string_matches("$.objectKey", "*type=unstructured/*"),
+            unstructured_application_glue_task.next(check_task_success)
+        ).otherwise(failure)
+
+    
+        check_task_success.when(
+            sfn.Condition.is_present("$.Error"),
+            failure
         ).otherwise(success)
+
+
+        # data_format_choice.when(
+        #     Condition.string_matches("$.objectKey", "*type=structured/*"),
+        #     structured_curated_lambda_fn_task.next(success)
+        # )
+
+        # size_bucket_structure_choice = Choice(self, "Check File Size, Bucket and Structure")
+
+        # size_bucket_structure_choice.when(
+        #     Condition.and_(
+        #         Condition.number_less_than("$.fileSize", SIZE_THRESHOLD),
+        #         Condition.string_matches("$.bucketNameLower", "*stage*"),
+        #         Condition.string_matches("$.objectKey", "*type=structured/*")
+        #     ),
+        #     structured_curated_lambda_fn_task.next(success)
+        # ).when(
+        #     Condition.and_(
+        #         Condition.number_greater_than("$.fileSize", SIZE_THRESHOLD),
+        #         Condition.string_matches("$.bucketNameLower", "*stage*"),
+        #         Condition.string_matches("$.objectKey", "*type=structured/*")
+        #     ),
+        #     structured_curated_glue_task.next(success)
+        # ).when(
+        #     Condition.and_(
+        #         Condition.number_less_than("$.fileSize", SIZE_THRESHOLD),
+        #         Condition.string_matches("$.bucketNameLower", "*curated*"),
+        #         Condition.string_matches("$.objectKey", "*type=structured/*")
+        #     ),
+        #     structured_application_lambda_fn_task.next(success)
+        # ).when(
+        #     Condition.and_(
+        #         Condition.number_greater_than("$.fileSize", SIZE_THRESHOLD),
+        #         Condition.string_matches("$.bucketNameLower", "*curated*"),
+        #         Condition.string_matches("$.objectKey", "*type=structured/*")
+        #     ),
+        #     structured_application_glue_task.next(success)
+        # ).when(
+        #     Condition.and_(
+        #         Condition.number_less_than("$.fileSize", SIZE_THRESHOLD),
+        #         Condition.string_matches("$.bucketNameLower", "*stage*"),
+        #         Condition.string_matches("$.objectKey", "*type=semi-structured/*")
+        #     ),
+        #     semi_structured_curated_lambda_fn_task.next(success)
+        # ).when(
+        #     Condition.and_(
+        #         Condition.number_greater_than("$.fileSize", SIZE_THRESHOLD),
+        #         Condition.string_matches("$.bucketNameLower", "*stage*"),
+        #         Condition.string_matches("$.objectKey", "*type=semi-structured/*")
+        #     ),
+        #     semi_structured_curated_glue_task.next(success)
+        # ).when(
+        #     Condition.and_(
+        #         Condition.number_less_than("$.fileSize", SIZE_THRESHOLD),
+        #         Condition.string_matches("$.bucketNameLower", "*stage*"),
+        #         Condition.string_matches("$.objectKey", "*type=unstructured/*")
+        #     ),
+        #     unstructured_curated_lambda_fn_task.next(success)
+        # ).when(
+        #     Condition.and_(
+        #         Condition.number_greater_than("$.fileSize", SIZE_THRESHOLD),
+        #         Condition.string_matches("$.bucketNameLower", "*stage*"),
+        #         Condition.string_matches("$.objectKey", "*type=unstructured/*")
+        #     ),
+        #     unstructured_curated_glue_task.next(success)
+        # ).when(
+        #     Condition.and_(
+        #         Condition.number_less_than("$.fileSize", SIZE_THRESHOLD),
+        #         Condition.string_matches("$.bucketNameLower", "*curated*"),
+        #         Condition.string_matches("$.objectKey", "*type=unstructured/*")
+        #     ),
+        #     unstructured_application_lambda_fn_task.next(success)
+        # ).when(
+        #     Condition.and_(
+        #         Condition.number_greater_than("$.fileSize", SIZE_THRESHOLD),
+        #         Condition.string_matches("$.bucketNameLower", "*curated*"),
+        #         Condition.string_matches("$.objectKey", "*type=unstructured/*")
+        #     ),
+        #     unstructured_application_glue_task.next(success)
+        # ).when(
+        #     Condition.and_(
+        #         Condition.number_greater_than("$.fileSize", SIZE_THRESHOLD),
+        #         Condition.string_matches("$.bucketNameLower", "*application*"),
+        #         Condition.string_matches("$.objectKey", "*model/fact*")
+        #     ),
+        #     snowflake_model_claims_fact_fn_task.next(success)
+        # ).otherwise(success)
 
 
         self.state_machine = sfn.StateMachine(
             self, id,
             state_machine_name="data-platform-orchestration-state-machine",
-            definition_body=sfn.DefinitionBody.from_chainable(size_bucket_structure_choice),
+            definition_body=sfn.DefinitionBody.from_chainable(file_size_choice),
             logs=sfn.LogOptions(
                 destination=logs.LogGroup(self, "StateMachineLogs", retention=logs.RetentionDays.ONE_WEEK),
                 level=sfn.LogLevel.ALL
