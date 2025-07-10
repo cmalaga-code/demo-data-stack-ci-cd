@@ -27,7 +27,7 @@ def check_env_vars(required_vars):
 # App start
 app = App()
 
-# ✅ Check required environment variables
+# Check required environment variables
 check_env_vars(["STAGE_BUCKET", "CURATED_BUCKET", "APPLICATION_BUCKET", "ENV"])
 deployment_env = os.environ["ENV"]
 
